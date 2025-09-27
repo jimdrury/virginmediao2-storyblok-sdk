@@ -13,6 +13,9 @@ A modern TypeScript SDK for Storyblok CMS with Next.js compatibility, providing 
 - 🧹 **Code Quality** - Biome for fast linting, formatting, and import sorting
 - 🧪 **Thoroughly Tested** - 70 tests with high coverage
 - 📁 **Clean Architecture** - Kebab-case file naming and modular structure
+- ⚡ **Modern Tooling** - Vite for fast builds, Vitest for testing
+- 📝 **Conventional Commits** - Enforced commit message standards
+- 🪝 **Git Hooks** - Automated quality checks with lefthook
 
 ## Installation
 
@@ -509,13 +512,87 @@ try {
 }
 ```
 
+## Development
+
+### Git Hooks
+
+The project uses [lefthook](https://github.com/evilmartians/lefthook) for git hooks to ensure code quality:
+
+**Pre-commit hooks:**
+- ✅ **Lint-staged** - Runs Biome linting and formatting on staged files
+- ✅ **Type-check** - Runs TypeScript type checking on changed files
+
+**Commit-msg hooks:**
+- ✅ **Commitlint** - Enforces conventional commit message format
+
+**Pre-push hooks:**
+- ✅ **Tests** - Runs all tests before pushing
+- ✅ **Build** - Ensures the project builds successfully
+
+### Conventional Commits
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for consistent commit messages:
+
+```bash
+# ✅ Good commit messages
+git commit -m "feat: add getAllStories pagination method"
+git commit -m "fix: resolve 429 retry logic issue"
+git commit -m "docs: update API documentation"
+git commit -m "test: add comprehensive SDK tests"
+git commit -m "refactor: extract pagination utility"
+
+# ❌ Bad commit messages (will be rejected)
+git commit -m "update stuff"
+git commit -m "Fix bug"
+git commit -m "WIP"
+```
+
+**Supported types:**
+- `feat` - New features
+- `fix` - Bug fixes  
+- `docs` - Documentation changes
+- `style` - Code style changes
+- `refactor` - Code refactoring
+- `test` - Test changes
+- `chore` - Maintenance tasks
+- `perf` - Performance improvements
+- `ci` - CI/CD changes
+- `build` - Build system changes
+- `revert` - Revert previous commit
+
+### Development Workflow
+
+```bash
+# Install dependencies
+yarn install
+
+# Run tests
+yarn test
+
+# Run tests with coverage
+yarn test --coverage
+
+# Lint and format
+yarn check --write
+
+# Build the library
+yarn build
+
+# Type check
+yarn type-check
+
+# Validate commit message
+yarn commitlint --from HEAD~1 --to HEAD
+```
+
 ## Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Make your changes (hooks will automatically run linting and formatting)
+4. Commit your changes using conventional commits (`git commit -m 'feat: add amazing feature'`)
+5. Push to the branch (hooks will run tests and build)
+6. Open a Pull Request
 
 ## License
 
