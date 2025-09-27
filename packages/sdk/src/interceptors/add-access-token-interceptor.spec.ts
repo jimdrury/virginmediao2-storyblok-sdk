@@ -59,12 +59,12 @@ describe("addAccessTokenInterceptor", () => {
     });
   });
 
-  it("should handle request errors", () => {
+  it("should handle request errors", async () => {
     addAccessTokenInterceptor(mockAxiosInstance, mockToken);
 
     const [, errorHandler] = mockAxiosInstance.interceptors.request.use.mock.calls[0];
     const error = new Error("Request error");
 
-    expect(() => errorHandler(error)).rejects.toBe(error);
+    await expect(() => errorHandler(error)).rejects.toBe(error);
   });
 });

@@ -85,7 +85,7 @@ describe("addRetryInterceptor", () => {
       config: {},
     };
 
-    const retryPromise = errorHandler(error);
+    const _retryPromise = errorHandler(error);
 
     // Fast-forward time to trigger retry
     await vi.advanceTimersByTimeAsync(100);

@@ -1,49 +1,49 @@
 {
-  "name": "storyblok-sdk-monorepo",
-  "version": "1.0.0",
-  "description": "Monorepo for Storyblok SDK packages",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
-  "scripts": {
-    "build": "yarn workspaces foreach -A run build",
-    "dev": "yarn workspaces foreach -A run dev",
-    "test": "yarn workspaces foreach -A run test",
-    "test:watch": "yarn workspaces foreach -A run test:watch",
-    "test:ui": "yarn workspaces foreach -A run test:ui",
-    "check": "yarn workspaces foreach -A run check",
-    "check:fix": "yarn workspaces foreach -A run check:fix",
-    "type-check": "yarn workspaces foreach -A run type-check",
-    "commitlint": "commitlint",
-    "prepare": "lefthook install"
-  },
-  "keywords": [
-    "storyblok",
-    "cms",
-    "typescript",
-    "sdk",
-    "api-client",
-    "monorepo"
-  ],
-  "author": "Virgin Media O2",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/virginmediao2/storyblok-sdk.git"
-  },
-  "bugs": {
-    "url": "https://github.com/virginmediao2/storyblok-sdk/issues"
-  },
-  "homepage": "https://github.com/virginmediao2/storyblok-sdk#readme",
-  "devDependencies": {
-    "@commitlint/cli": "^19.0.0",
-    "@commitlint/config-conventional": "^19.0.0",
-    "lefthook": "^1.7.0",
-    "lint-staged": "^15.0.0"
-  },
-  "engines": {
-    "node": ">=22.0.0"
-  },
-  "packageManager": "yarn@4.10.3"
+	"name": "storyblok-sdk-monorepo",
+	"version": "1.0.0",
+	"description": "Monorepo for Storyblok SDK packages",
+	"private": true,
+	"workspaces": [
+		"packages/*"
+	],
+	"scripts": {
+		"build": "yarn workspaces foreach -A run build",
+		"dev": "yarn workspaces foreach -A run dev",
+		"test": "yarn workspaces foreach -A run test",
+		"test:watch": "yarn workspaces foreach -A run test:watch",
+		"test:ui": "yarn workspaces foreach -A run test:ui",
+		"check": "yarn workspaces foreach -A run check",
+		"check:fix": "yarn workspaces foreach -A run check:fix",
+		"type-check": "yarn workspaces foreach -A run type-check",
+		"commitlint": "commitlint",
+		"prepare": "lefthook install"
+	},
+	"keywords": [
+		"storyblok",
+		"cms",
+		"typescript",
+		"sdk",
+		"api-client",
+		"monorepo"
+	],
+	"author": "Virgin Media O2",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/virginmediao2/storyblok-sdk.git"
+	},
+	"bugs": {
+		"url": "https://github.com/virginmediao2/storyblok-sdk/issues"
+	},
+	"homepage": "https://github.com/virginmediao2/storyblok-sdk#readme",
+	"devDependencies": {
+		"@commitlint/cli": "^20.0.0",
+		"@commitlint/config-conventional": "^20.0.0",
+		"lefthook": "^1.13.4",
+		"lint-staged": "^16.2.1"
+	},
+	"engines": {
+		"node": ">=22.0.0"
+	},
+	"packageManager": "yarn@4.10.3"
 }
