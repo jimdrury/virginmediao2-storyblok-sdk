@@ -1,28 +1,31 @@
 {
-  "name": "@virginmediao2/storyblok-sdk",
+  "name": "storyblok-sdk-monorepo",
   "version": "1.0.0",
-  "description": "A TypeScript SDK for Storyblok CMS with Next.js compatibility",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "description": "Monorepo for Storyblok SDK packages",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "vite build",
-    "dev": "vite build --watch",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
-    "lint": "biome lint src/",
-    "lint:fix": "biome lint --write src/",
-    "format": "biome format src/",
-    "format:fix": "biome format --write src/",
-    "check": "biome check src/",
-    "check:fix": "biome check --apply src/",
-    "type-check": "tsc --noEmit",
+    "build": "yarn workspaces foreach -A run build",
+    "dev": "yarn workspaces foreach -A run dev",
+    "test": "yarn workspaces foreach -A run test",
+    "test:watch": "yarn workspaces foreach -A run test:watch",
+    "test:ui": "yarn workspaces foreach -A run test:ui",
+    "check": "yarn workspaces foreach -A run check",
+    "check:fix": "yarn workspaces foreach -A run check:fix",
+    "type-check": "yarn workspaces foreach -A run type-check",
     "commitlint": "commitlint",
     "prepare": "lefthook install"
   },
-  "keywords": ["storyblok", "cms", "typescript", "sdk", "api-client"],
+  "keywords": [
+    "storyblok",
+    "cms",
+    "typescript",
+    "sdk",
+    "api-client",
+    "monorepo"
+  ],
   "author": "Virgin Media O2",
   "license": "MIT",
   "repository": {
@@ -33,34 +36,14 @@
     "url": "https://github.com/virginmediao2/storyblok-sdk/issues"
   },
   "homepage": "https://github.com/virginmediao2/storyblok-sdk#readme",
-  "peerDependencies": {
-    "axios": "^1.0.0"
-  },
   "devDependencies": {
-    "@biomejs/biome": "^1.8.3",
     "@commitlint/cli": "^19.0.0",
     "@commitlint/config-conventional": "^19.0.0",
-    "@types/node": "^20.0.0",
-    "@vitest/coverage-v8": "^1.6.0",
-    "@vitest/ui": "^1.6.0",
-    "axios": "^1.6.0",
     "lefthook": "^1.7.0",
-    "lint-staged": "^15.0.0",
-    "tslib": "^2.6.0",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0",
-    "vite-plugin-dts": "^4.0.0",
-    "vitest": "^1.6.0"
+    "lint-staged": "^15.0.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=22.0.0"
   },
-  "packageManager": "yarn@4.10.3",
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "biome check --write --no-errors-on-unmatched",
-      "biome format --write --no-errors-on-unmatched"
-    ],
-    "*.{json,md}": ["biome format --write --no-errors-on-unmatched"]
-  }
+  "packageManager": "yarn@4.10.3"
 }

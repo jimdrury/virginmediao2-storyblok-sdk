@@ -992,19 +992,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@virginmediao2/storyblok-sdk@workspace:.":
+"@virginmediao2/storyblok-sdk@workspace:packages/sdk":
   version: 0.0.0-use.local
-  resolution: "@virginmediao2/storyblok-sdk@workspace:."
+  resolution: "@virginmediao2/storyblok-sdk@workspace:packages/sdk"
   dependencies:
     "@biomejs/biome": "npm:^1.8.3"
-    "@commitlint/cli": "npm:^19.0.0"
-    "@commitlint/config-conventional": "npm:^19.0.0"
     "@types/node": "npm:^20.0.0"
     "@vitest/coverage-v8": "npm:^1.6.0"
     "@vitest/ui": "npm:^1.6.0"
     axios: "npm:^1.6.0"
-    lefthook: "npm:^1.7.0"
-    lint-staged: "npm:^15.0.0"
     tslib: "npm:^2.6.0"
     typescript: "npm:^5.0.0"
     vite: "npm:^5.0.0"
@@ -3946,6 +3942,17 @@ __metadata:
   checksum: 10c0/4a6f9218aef3f41046c3c7ecf1f98df00b30a07f4f35c6d47b28329bc2531eef820828951c7d7b39a1c5eb19ad8a46e3ddfc7deb28f0a2f3ceebee11bab7ba50
   languageName: node
   linkType: hard
+
+"storyblok-sdk-monorepo@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "storyblok-sdk-monorepo@workspace:."
+  dependencies:
+    "@commitlint/cli": "npm:^19.0.0"
+    "@commitlint/config-conventional": "npm:^19.0.0"
+    lefthook: "npm:^1.7.0"
+    lint-staged: "npm:^15.0.0"
+  languageName: unknown
+  linkType: soft
 
 "string-argv@npm:^0.3.2, string-argv@npm:~0.3.1":
   version: 0.3.2

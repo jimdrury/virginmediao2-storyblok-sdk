@@ -4,7 +4,7 @@ pre-commit:
     lint-staged:
       run: yarn lint-staged
     type-check:
-      run: yarn type-check
+      run: yarn workspaces foreach -A run type-check
       files: git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$'
 
 commit-msg:
