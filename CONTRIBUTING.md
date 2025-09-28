@@ -7,7 +7,7 @@ We welcome contributions to the @virginmediao2/storyblok-sdk! Please follow thes
 ### Prerequisites
 
 - Node.js (version 18 or higher)
-- Yarn package manager
+- Corepack enabled (`corepack enable`)
 
 ### Installation
 
@@ -23,10 +23,10 @@ yarn install
 yarn test
 
 # Run tests with coverage
-yarn test --coverage
+yarn test 
 
 # Lint and format
-yarn check --write
+yarn check:fix
 
 # Build the library
 yarn build

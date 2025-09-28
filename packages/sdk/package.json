@@ -1,60 +1,63 @@
 {
-	"name": "@virginmediao2/storyblok-sdk",
-	"version": "1.0.0",
-	"description": "A TypeScript SDK for Storyblok CMS with Next.js compatibility",
-	"main": "dist/index.js",
-	"module": "dist/index.esm.js",
-	"types": "dist/index.d.ts",
-	"files": [
-		"dist"
-	],
-	"scripts": {
-		"build": "vite build",
-		"dev": "vite build --watch",
-		"test": "vitest run --coverage",
-		"test:fast": "vitest run",
-		"test:watch": "vitest",
-		"test:ui": "vitest --ui",
-		"check": "biome check src/",
-		"check:fix": "biome check --write src/",
-		"type-check": "tsc --noEmit",
-		"docs": "typedoc --out ../../app/docs/public/typedoc src/index.ts",
-		"docs:serve": "npx serve docs"
-	},
-	"keywords": [
-		"storyblok",
-		"cms",
-		"typescript",
-		"sdk",
-		"api-client"
-	],
-	"author": "Virgin Media O2",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/virginmediao2/storyblok-sdk.git"
-	},
-	"bugs": {
-		"url": "https://github.com/virginmediao2/storyblok-sdk/issues"
-	},
-	"homepage": "https://github.com/virginmediao2/storyblok-sdk#readme",
-	"peerDependencies": {
-		"axios": "^1.0.0"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^2.2.4",
-		"@types/node": "^24.5.2",
-		"@vitest/coverage-v8": "^3.2.4",
-		"@vitest/ui": "^3.2.4",
-		"axios": "^1.12.2",
-		"tslib": "^2.8.1",
-		"typedoc": "^0.27.0",
-		"typescript": "^5.9.2",
-		"vite": "^7.1.7",
-		"vite-plugin-dts": "^4.5.4",
-		"vitest": "^3.2.4"
-	},
-	"engines": {
-		"node": ">=22.0.0"
-	}
+  "name": "@virginmediao2/storyblok-sdk",
+  "version": "1.0.0",
+  "description": "A TypeScript SDK for Storyblok CMS with Next.js compatibility",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "type-check": "tsc --noEmit",
+    "docs": "typedoc --out ../../app/docs/public/typedoc src/index.ts",
+    "docs:serve": "npx serve docs",
+    "format": "biome format",
+    "format:fix": "biome format --fix",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --fix",
+    "check": "biome check",
+    "check:fix": "biome check --fix",
+    "test": "vitest run --coverage",
+    "test:fast": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "keywords": [
+    "storyblok",
+    "cms",
+    "typescript",
+    "sdk",
+    "api-client"
+  ],
+  "author": "Virgin Media O2",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/virginmediao2/storyblok-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/virginmediao2/storyblok-sdk/issues"
+  },
+  "homepage": "https://github.com/virginmediao2/storyblok-sdk#readme",
+  "peerDependencies": {
+    "axios": ">=1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.3",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
+    "axios": "^1.12.2",
+    "tslib": "^2.8.1",
+    "typedoc": "^0.28.13",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
 }

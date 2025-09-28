@@ -9,10 +9,11 @@ export default function HomePage() {
             Storyblok SDK Documentation
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            A comprehensive TypeScript SDK for Storyblok CMS with Next.js compatibility.
-            Auto-generated documentation from source code with full type safety.
+            A comprehensive TypeScript SDK for Storyblok CMS with Next.js
+            compatibility. Auto-generated documentation from source code with
+            full type safety.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/docs"
@@ -37,25 +38,28 @@ export default function HomePage() {
               🚀 Content Delivery
             </h3>
             <p className="text-gray-600">
-              Access published and draft content with full TypeScript support and automatic pagination.
+              Access published and draft content with full TypeScript support
+              and automatic pagination.
             </p>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">
               ⚙️ Management API
             </h3>
             <p className="text-gray-600">
-              Create, update, and manage content with comprehensive management operations.
+              Create, update, and manage content with comprehensive management
+              operations.
             </p>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">
               🔧 Auto-Generated Docs
             </h3>
             <p className="text-gray-600">
-              Documentation automatically generated from TypeScript source code with JSDoc comments.
+              Documentation automatically generated from TypeScript source code
+              with JSDoc comments.
             </p>
           </div>
         </div>

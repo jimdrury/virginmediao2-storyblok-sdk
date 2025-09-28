@@ -1,1 +1,4 @@
-export { fetchAllPaginated, type PaginationOptions } from "./fetch-all-paginated";
+export {
+  fetchAllPaginated,
+  type PaginationOptions,
+} from './fetch-all-paginated';

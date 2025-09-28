@@ -1,10 +1,10 @@
 {
-	"entryPoints": ["src/index.ts"],
-	"name": "Virgin Media O2 Storyblok SDK",
-	"includeVersion": false,
-	"excludePrivate": true,
-	"excludeProtected": false,
-	"excludeExternals": false,
-	"theme": "default",
-	"cleanOutputDir": true
+  "entryPoints": ["src/index.ts"],
+  "name": "Virgin Media O2 Storyblok SDK",
+  "includeVersion": false,
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeExternals": false,
+  "theme": "default",
+  "cleanOutputDir": true
 }

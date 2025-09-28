@@ -1,4 +1,4 @@
-import type { AxiosResponse } from "axios";
+import type { AxiosResponse } from 'axios';
 
 export interface PaginationOptions {
   /**
@@ -27,9 +27,12 @@ export interface PaginationOptions {
  * @returns Promise resolving to array of all items
  */
 export async function fetchAllPaginated<TResponse, TItem>(
-  fetchPage: (page: number, perPage: number) => Promise<AxiosResponse<TResponse>>,
+  fetchPage: (
+    page: number,
+    perPage: number,
+  ) => Promise<AxiosResponse<TResponse>>,
   extractItems: (response: TResponse) => TItem[],
-  options?: PaginationOptions
+  options?: PaginationOptions,
 ): Promise<TItem[]> {
   const allItems: TItem[] = [];
   let page = 1;
@@ -55,7 +58,8 @@ export async function fetchAllPaginated<TResponse, TItem>(
 
     // Check if we've reached the end using Storyblok's pagination logic
     hasMore =
-      items.length === perPage && (totalItems === undefined || allItems.length < totalItems);
+      items.length === perPage &&
+      (totalItems === undefined || allItems.length < totalItems);
     page++;
   }
 
