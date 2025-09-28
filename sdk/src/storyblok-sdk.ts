@@ -1,11 +1,11 @@
 import axios, { type AxiosInstance } from 'axios';
-import { addAccessTokenInterceptor, addRetryInterceptor } from './interceptors';
+import { storyblokCdnAuth } from './middleware';
 import type {
+  BaseStoryblokOptions,
   GetStoriesParams,
   GetStoryParams,
   StoryblokDatasourceEntriesResponse,
   StoryblokLinksResponse,
-  StoryblokSdkOptions,
   StoryblokStoriesResponse,
   StoryblokStoryResponse,
   StoryblokTagsResponse,
@@ -36,18 +36,15 @@ import { fetchAllPaginated } from './utils';
  * ```
  */
 export class StoryblokSdk {
-  private axiosInstance: AxiosInstance;
-  private accessToken: string;
+  public axiosInstance: AxiosInstance;
   private baseURL: string;
 
   /**
    * Creates a new Storyblok SDK instance
    *
    * @param options - Configuration options for the SDK
-   * @param options.accessToken - Your Storyblok access token
    * @param options.baseURL - Base URL for the Storyblok API (defaults to 'https://api.storyblok.com/v2')
    * @param options.timeout - Request timeout in milliseconds (defaults to 10000)
-   * @param options.retry - Retry configuration for failed requests
    *
    * @example
    * ```typescript
@@ -62,9 +59,8 @@ export class StoryblokSdk {
    * });
    * ```
    */
-  constructor(options: StoryblokSdkOptions) {
-    this.accessToken = options.accessToken;
-    this.baseURL = options.baseURL || 'https://api.storyblok.com/v2';
+  constructor(options: BaseStoryblokOptions) {
+    this.baseURL = options.baseURL || 'https://api.storyblok.com/v2/cdn/';
 
     // Create axios instance with default configuration
     this.axiosInstance = axios.create({
@@ -76,38 +72,13 @@ export class StoryblokSdk {
       },
     });
 
-    addAccessTokenInterceptor(this.axiosInstance, this.accessToken);
-    addRetryInterceptor(this.axiosInstance, options.retry);
-  }
+    // Apply CDN auth middleware automatically
+    storyblokCdnAuth({ accessToken: options.accessToken })(this.axiosInstance);
 
-  /**
-   * Get axios interceptors for adding custom middleware
-   *
-   * Allows you to add custom request/response interceptors to the underlying
-   * axios instance for authentication, logging, or other middleware needs.
-   *
-   * @returns The axios interceptors object
-   *
-   * @example
-   * ```typescript
-   * // Add a custom request interceptor
-   * sdk.interceptors.request.use((config) => {
-   *   console.log('Making request to:', config.url);
-   *   return config;
-   * });
-   *
-   * // Add a custom response interceptor
-   * sdk.interceptors.response.use(
-   *   (response) => response,
-   *   (error) => {
-   *     console.error('Request failed:', error.message);
-   *     return Promise.reject(error);
-   *   }
-   * );
-   * ```
-   */
-  get interceptors() {
-    return this.axiosInstance.interceptors;
+    // Apply any additional middlewares
+    options.middlewares?.forEach((middleware) => {
+      middleware(this.axiosInstance);
+    });
   }
 
   /**

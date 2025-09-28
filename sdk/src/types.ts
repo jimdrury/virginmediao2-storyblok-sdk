@@ -1,7 +1,14 @@
 import type axios from 'axios';
+import type { AxiosInstance } from 'axios';
+
+type AxiosMiddleware = (axiosInstance: AxiosInstance) => void;
 
 // Base interfaces for SDK configuration
 export interface BaseStoryblokOptions {
+  /**
+   * Access token for Storyblok API
+   */
+  accessToken: string;
   /**
    * Base URL for Storyblok API
    * @default 'https://api.storyblok.com/v2'
@@ -16,13 +23,11 @@ export interface BaseStoryblokOptions {
    * Retry configuration for handling rate limits
    */
   retry?: StoryblokRetryOptions;
-}
 
-export interface StoryblokSdkOptions extends BaseStoryblokOptions {
   /**
-   * Storyblok access token for content delivery
+   * Axios middleware to apply to the axios instance
    */
-  accessToken: string;
+  middlewares?: Array<AxiosMiddleware>;
 }
 
 export interface StoryblokManagerSdkOptions extends BaseStoryblokOptions {
@@ -231,11 +236,11 @@ export interface GetStoriesParams {
   /**
    * Resolve relations
    */
-  resolve_relations?: string | string[];
+  resolve_relations?: `${string}:${string}`[];
   /**
    * Resolve links
    */
-  resolve_links?: string;
+  resolve_links?: 'url' | 'story';
   /**
    * Language code
    */

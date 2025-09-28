@@ -20,13 +20,13 @@ storyblok-sdk/
 
 ### @virginmediao2/storyblok-sdk
 
-The main SDK package providing both content delivery and management API access for Storyblok CMS.
+The main SDK package providing content delivery API access for Storyblok CMS with flexible middleware support.
 
 **Key Features:**
 
 - 🔥 **TypeScript-first** - Fully typed with generic support
 - 🚀 **Next.js optimized** - Built specifically for Next.js applications
-- 📦 **Two SDK classes** - Separate SDKs for content delivery and management
+- 📦 **Content Delivery SDK** - Optimized for fetching published content
 - 🛡️ **Axios-powered** - Built on axios with full middleware support
 - 🔧 **Customizable** - Extensive configuration options
 - 📖 **Well-documented** - Comprehensive TypeScript interfaces and JSDoc comments
