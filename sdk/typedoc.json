@@ -1,7 +1,7 @@
 {
   "entryPoints": ["src/index.ts"],
   "name": "Virgin Media O2 Storyblok SDK",
-  "out": "../../apps/docs/public/typedoc",
+  "out": "../docs/public/typedoc",
   "includeVersion": false,
   "excludePrivate": true,
   "excludeProtected": false,
