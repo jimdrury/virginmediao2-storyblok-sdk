@@ -8,6 +8,8 @@ pre-commit:
     type-check:
       glob: "*.{ts,tsx}"
       run: yarn workspaces foreach -A run type-check
+    depdencies-match:
+      run: yarn constraints
 
 commit-msg:
   commands:
