@@ -1,8 +1,10 @@
 pre-commit:
   parallel: true
   commands:
-    lint-staged:
-      run: yarn lint-staged
+    check:
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: npx @biomejs/biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      stage_fixed: true
     type-check:
       run: yarn workspaces foreach -A run type-check
       files: git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$'

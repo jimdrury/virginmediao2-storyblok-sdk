@@ -1,6 +1,6 @@
-export { addAccessTokenInterceptor, addRetryInterceptor } from "./interceptors";
-export { StoryblokManagerSdk } from "./storyblok-manager-sdk";
-export { StoryblokSdk } from "./storyblok-sdk";
+export { addAccessTokenInterceptor, addRetryInterceptor } from './interceptors';
+export { StoryblokManagerSdk } from './storyblok-manager-sdk';
+export { StoryblokSdk } from './storyblok-sdk';
 export type {
   BaseStoryblokOptions,
   GetStoriesParams,
@@ -29,5 +29,5 @@ export type {
   StoryblokStoryResponse,
   StoryblokTag,
   StoryblokTagsResponse,
-} from "./types";
-export { fetchAllPaginated, type PaginationOptions } from "./utils";
+} from './types';
+export { fetchAllPaginated, type PaginationOptions } from './utils';

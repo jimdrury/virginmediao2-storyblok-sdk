@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { addAccessTokenInterceptor } from "./add-access-token-interceptor";
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { addAccessTokenInterceptor } from './add-access-token-interceptor';
 
-describe("addAccessTokenInterceptor", () => {
+describe('addAccessTokenInterceptor', () => {
   let mockAxiosInstance: {
     interceptors: {
       request: {
@@ -9,7 +9,7 @@ describe("addAccessTokenInterceptor", () => {
       };
     };
   };
-  const mockToken = "test-access-token";
+  const mockToken = 'test-access-token';
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -23,33 +23,35 @@ describe("addAccessTokenInterceptor", () => {
     };
   });
 
-  it("should add request interceptor", () => {
+  it('should add request interceptor', () => {
     addAccessTokenInterceptor(mockAxiosInstance, mockToken);
 
     expect(mockAxiosInstance.interceptors.request.use).toHaveBeenCalledWith(
       expect.any(Function),
-      expect.any(Function)
+      expect.any(Function),
     );
   });
 
-  it("should add token to request config", () => {
+  it('should add token to request config', () => {
     addAccessTokenInterceptor(mockAxiosInstance, mockToken);
 
-    const [requestHandler] = mockAxiosInstance.interceptors.request.use.mock.calls[0];
-    const config = { params: { existing: "param" } };
+    const [requestHandler] =
+      mockAxiosInstance.interceptors.request.use.mock.calls[0];
+    const config = { params: { existing: 'param' } };
 
     const result = requestHandler(config);
 
     expect(result.params).toEqual({
-      existing: "param",
+      existing: 'param',
       token: mockToken,
     });
   });
 
-  it("should add token to empty params", () => {
+  it('should add token to empty params', () => {
     addAccessTokenInterceptor(mockAxiosInstance, mockToken);
 
-    const [requestHandler] = mockAxiosInstance.interceptors.request.use.mock.calls[0];
+    const [requestHandler] =
+      mockAxiosInstance.interceptors.request.use.mock.calls[0];
     const config = {};
 
     const result = requestHandler(config);
@@ -59,11 +61,12 @@ describe("addAccessTokenInterceptor", () => {
     });
   });
 
-  it("should handle request errors", async () => {
+  it('should handle request errors', async () => {
     addAccessTokenInterceptor(mockAxiosInstance, mockToken);
 
-    const [, errorHandler] = mockAxiosInstance.interceptors.request.use.mock.calls[0];
-    const error = new Error("Request error");
+    const [, errorHandler] =
+      mockAxiosInstance.interceptors.request.use.mock.calls[0];
+    const error = new Error('Request error');
 
     await expect(() => errorHandler(error)).rejects.toBe(error);
   });

@@ -1,5 +1,5 @@
-import type { AxiosInstance } from "axios";
-import type { StoryblokRetryOptions } from "../types";
+import type { AxiosInstance } from 'axios';
+import type { StoryblokRetryOptions } from '../types';
 
 /**
  * Add exponential backoff retry interceptor for 429 errors to an axios instance
@@ -10,7 +10,7 @@ import type { StoryblokRetryOptions } from "../types";
  */
 export function addRetryInterceptor(
   axiosInstance: AxiosInstance,
-  retryOptions: StoryblokRetryOptions = {}
+  retryOptions: StoryblokRetryOptions = {},
 ) {
   const baseDelay = retryOptions.baseDelay || 50;
   const maxDelay = retryOptions.maxDelay || 2000;
@@ -50,6 +50,6 @@ export function addRetryInterceptor(
 
       // If we've reached max delay, stop retrying
       return Promise.reject(error);
-    }
+    },
   );
 }

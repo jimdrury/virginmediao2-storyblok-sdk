@@ -1,5 +1,5 @@
-import axios, { type AxiosInstance } from "axios";
-import { addRetryInterceptor } from "./interceptors";
+import axios, { type AxiosInstance } from 'axios';
+import { addRetryInterceptor } from './interceptors';
 import type {
   StoryblokAsset,
   StoryblokAssetsResponse,
@@ -9,7 +9,7 @@ import type {
   StoryblokSpaceResponse,
   StoryblokStoriesManagementResponse,
   StoryblokStoryManagementResponse,
-} from "./types";
+} from './types';
 
 /**
  * Storyblok Management SDK for content management API
@@ -19,25 +19,30 @@ export class StoryblokManagerSdk {
   private axiosInstance: AxiosInstance;
   private authToken: string;
   private baseURL: string;
-  private authType: "personal" | "oauth";
+  private authType: 'personal' | 'oauth';
 
   constructor(options: StoryblokManagerSdkOptions) {
     if (!options.personalAccessToken && !options.oauthToken) {
-      throw new Error("Either personalAccessToken or oauthToken must be provided");
+      throw new Error(
+        'Either personalAccessToken or oauthToken must be provided',
+      );
     }
 
-    this.authToken = options.personalAccessToken || options.oauthToken || "";
-    this.authType = options.personalAccessToken ? "personal" : "oauth";
-    this.baseURL = options.baseURL || "https://mapi.storyblok.com/v1";
+    this.authToken = options.personalAccessToken || options.oauthToken || '';
+    this.authType = options.personalAccessToken ? 'personal' : 'oauth';
+    this.baseURL = options.baseURL || 'https://mapi.storyblok.com/v1';
 
     // Create axios instance with default configuration
     this.axiosInstance = axios.create({
       baseURL: this.baseURL,
       timeout: options.timeout || 10000,
       headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: this.authType === "personal" ? this.authToken : `Bearer ${this.authToken}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization:
+          this.authType === 'personal'
+            ? this.authToken
+            : `Bearer ${this.authToken}`,
       },
     });
 
@@ -57,7 +62,7 @@ export class StoryblokManagerSdk {
    * Get current space information
    */
   async getSpace() {
-    return await this.axiosInstance.get<StoryblokSpaceResponse>("/spaces/me");
+    return await this.axiosInstance.get<StoryblokSpaceResponse>('/spaces/me');
   }
 
   // Story Management
@@ -74,22 +79,25 @@ export class StoryblokManagerSdk {
       filter_query?: Record<string, unknown>;
       is_startpage?: boolean;
       in_trash?: boolean;
-    }
+    },
   ) {
     return await this.axiosInstance.get<StoryblokStoriesManagementResponse<T>>(
       `/spaces/${spaceId}/stories`,
       {
         params,
-      }
+      },
     );
   }
 
   /**
    * Get a single story by ID
    */
-  async getStory<T = Record<string, unknown>>(spaceId: number, storyId: number) {
+  async getStory<T = Record<string, unknown>>(
+    spaceId: number,
+    storyId: number,
+  ) {
     return await this.axiosInstance.get<StoryblokStoryManagementResponse<T>>(
-      `/spaces/${spaceId}/stories/${storyId}`
+      `/spaces/${spaceId}/stories/${storyId}`,
     );
   }
 
@@ -106,13 +114,13 @@ export class StoryblokManagerSdk {
       is_folder?: boolean;
       is_startpage?: boolean;
       [key: string]: unknown;
-    }
+    },
   ) {
     return await this.axiosInstance.post<StoryblokStoryManagementResponse<T>>(
       `/spaces/${spaceId}/stories`,
       {
         story: storyData,
-      }
+      },
     );
   }
 
@@ -130,13 +138,13 @@ export class StoryblokManagerSdk {
       is_folder: boolean;
       is_startpage: boolean;
       [key: string]: unknown;
-    }>
+    }>,
   ) {
     return await this.axiosInstance.put<StoryblokStoryManagementResponse<T>>(
       `/spaces/${spaceId}/stories/${storyId}`,
       {
         story: storyData,
-      }
+      },
     );
   }
 
@@ -145,25 +153,31 @@ export class StoryblokManagerSdk {
    */
   async deleteStory(spaceId: number, storyId: number) {
     return await this.axiosInstance.delete<StoryblokStoryManagementResponse>(
-      `/spaces/${spaceId}/stories/${storyId}`
+      `/spaces/${spaceId}/stories/${storyId}`,
     );
   }
 
   /**
    * Publish a story
    */
-  async publishStory<T = Record<string, unknown>>(spaceId: number, storyId: number) {
+  async publishStory<T = Record<string, unknown>>(
+    spaceId: number,
+    storyId: number,
+  ) {
     return await this.axiosInstance.get<StoryblokStoryManagementResponse<T>>(
-      `/spaces/${spaceId}/stories/${storyId}/publish`
+      `/spaces/${spaceId}/stories/${storyId}/publish`,
     );
   }
 
   /**
    * Unpublish a story
    */
-  async unpublishStory<T = Record<string, unknown>>(spaceId: number, storyId: number) {
+  async unpublishStory<T = Record<string, unknown>>(
+    spaceId: number,
+    storyId: number,
+  ) {
     return await this.axiosInstance.get<StoryblokStoryManagementResponse<T>>(
-      `/spaces/${spaceId}/stories/${storyId}/unpublish`
+      `/spaces/${spaceId}/stories/${storyId}/unpublish`,
     );
   }
 
@@ -173,7 +187,7 @@ export class StoryblokManagerSdk {
    */
   async getComponents(spaceId: number) {
     return await this.axiosInstance.get<StoryblokComponentsResponse>(
-      `/spaces/${spaceId}/components`
+      `/spaces/${spaceId}/components`,
     );
   }
 
@@ -182,7 +196,7 @@ export class StoryblokManagerSdk {
    */
   async getComponent(spaceId: number, componentId: number) {
     return await this.axiosInstance.get<StoryblokComponentResponse>(
-      `/spaces/${spaceId}/components/${componentId}`
+      `/spaces/${spaceId}/components/${componentId}`,
     );
   }
 
@@ -200,13 +214,13 @@ export class StoryblokManagerSdk {
       is_root?: boolean;
       is_nestable?: boolean;
       [key: string]: unknown;
-    }
+    },
   ) {
     return await this.axiosInstance.post<StoryblokComponentResponse>(
       `/spaces/${spaceId}/components`,
       {
         component: componentData,
-      }
+      },
     );
   }
 
@@ -225,13 +239,13 @@ export class StoryblokManagerSdk {
       is_root: boolean;
       is_nestable: boolean;
       [key: string]: unknown;
-    }>
+    }>,
   ) {
     return await this.axiosInstance.put<StoryblokComponentResponse>(
       `/spaces/${spaceId}/components/${componentId}`,
       {
         component: componentData,
-      }
+      },
     );
   }
 
@@ -240,7 +254,7 @@ export class StoryblokManagerSdk {
    */
   async deleteComponent(spaceId: number, componentId: number) {
     return await this.axiosInstance.delete<StoryblokComponentResponse>(
-      `/spaces/${spaceId}/components/${componentId}`
+      `/spaces/${spaceId}/components/${componentId}`,
     );
   }
 
@@ -257,21 +271,25 @@ export class StoryblokManagerSdk {
       title?: string;
       copyright?: string;
       source?: string;
-    }
+    },
   ) {
     const formData = new FormData();
-    formData.append("file", file as Blob, filename);
+    formData.append('file', file as Blob, filename);
 
-    if (options?.alt) formData.append("alt", options.alt);
-    if (options?.title) formData.append("title", options.title);
-    if (options?.copyright) formData.append("copyright", options.copyright);
-    if (options?.source) formData.append("source", options.source);
+    if (options?.alt) formData.append('alt', options.alt);
+    if (options?.title) formData.append('title', options.title);
+    if (options?.copyright) formData.append('copyright', options.copyright);
+    if (options?.source) formData.append('source', options.source);
 
-    return await this.axiosInstance.post<StoryblokAsset>(`/spaces/${spaceId}/assets`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
+    return await this.axiosInstance.post<StoryblokAsset>(
+      `/spaces/${spaceId}/assets`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       },
-    });
+    );
   }
 
   /**
@@ -283,17 +301,22 @@ export class StoryblokManagerSdk {
       page?: number;
       per_page?: number;
       search?: string;
-    }
+    },
   ) {
-    return await this.axiosInstance.get<StoryblokAssetsResponse>(`/spaces/${spaceId}/assets`, {
-      params,
-    });
+    return await this.axiosInstance.get<StoryblokAssetsResponse>(
+      `/spaces/${spaceId}/assets`,
+      {
+        params,
+      },
+    );
   }
 
   /**
    * Delete an asset
    */
   async deleteAsset(spaceId: number, assetId: number) {
-    return await this.axiosInstance.delete<StoryblokAsset>(`/spaces/${spaceId}/assets/${assetId}`);
+    return await this.axiosInstance.delete<StoryblokAsset>(
+      `/spaces/${spaceId}/assets/${assetId}`,
+    );
   }
 }

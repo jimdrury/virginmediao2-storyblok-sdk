@@ -1,4 +1,4 @@
-import type { AxiosInstance } from "axios";
+import type { AxiosInstance } from 'axios';
 
 /**
  * Add access token interceptor for Storyblok Content Delivery API
@@ -7,7 +7,10 @@ import type { AxiosInstance } from "axios";
  * @param axiosInstance - The axios instance to add the interceptor to
  * @param accessToken - The Storyblok access token
  */
-export function addAccessTokenInterceptor(axiosInstance: AxiosInstance, accessToken: string) {
+export function addAccessTokenInterceptor(
+  axiosInstance: AxiosInstance,
+  accessToken: string,
+) {
   axiosInstance.interceptors.request.use(
     (config) => {
       config.params = {
@@ -16,6 +19,6 @@ export function addAccessTokenInterceptor(axiosInstance: AxiosInstance, accessTo
       };
       return config;
     },
-    (error) => Promise.reject(error)
+    (error) => Promise.reject(error),
   );
 }

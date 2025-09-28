@@ -1,4 +1,4 @@
-import type axios from "axios";
+import type axios from 'axios';
 
 // Base interfaces for SDK configuration
 export interface BaseStoryblokOptions {
@@ -247,7 +247,7 @@ export interface GetStoriesParams {
   /**
    * Include draft versions
    */
-  version?: "draft" | "published";
+  version?: 'draft' | 'published';
   /**
    * Additional query parameters
    */
@@ -278,11 +278,11 @@ export interface GetStoryParams {
   /**
    * Include draft versions
    */
-  version?: "draft" | "published";
+  version?: 'draft' | 'published';
   /**
    * Find by UUID instead of slug
    */
-  find_by?: "uuid";
+  find_by?: 'uuid';
   /**
    * Additional query parameters
    */
@@ -324,7 +324,9 @@ export interface StoryblokAssetsResponse {
   assets: StoryblokAsset[];
 }
 
-export interface StoryblokStoriesManagementResponse<T = Record<string, unknown>> {
+export interface StoryblokStoriesManagementResponse<
+  T = Record<string, unknown>,
+> {
   stories: StoryblokStory<T>[];
 }
 
@@ -368,4 +370,6 @@ export interface StoryblokRetryOptions {
 }
 
 // Middleware types for axios interceptors - using inferred types from axios instance
-export type StoryblokAxiosInterceptors = ReturnType<typeof axios.create>["interceptors"];
+export type StoryblokAxiosInterceptors = ReturnType<
+  typeof axios.create
+>['interceptors'];

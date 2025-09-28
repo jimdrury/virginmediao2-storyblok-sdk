@@ -1,5 +1,5 @@
-import axios, { type AxiosInstance } from "axios";
-import { addAccessTokenInterceptor, addRetryInterceptor } from "./interceptors";
+import axios, { type AxiosInstance } from 'axios';
+import { addAccessTokenInterceptor, addRetryInterceptor } from './interceptors';
 import type {
   GetStoriesParams,
   GetStoryParams,
@@ -9,8 +9,8 @@ import type {
   StoryblokStoriesResponse,
   StoryblokStoryResponse,
   StoryblokTagsResponse,
-} from "./types";
-import { fetchAllPaginated } from "./utils";
+} from './types';
+import { fetchAllPaginated } from './utils';
 
 /**
  * Storyblok SDK for content delivery API
@@ -64,15 +64,15 @@ export class StoryblokSdk {
    */
   constructor(options: StoryblokSdkOptions) {
     this.accessToken = options.accessToken;
-    this.baseURL = options.baseURL || "https://api.storyblok.com/v2";
+    this.baseURL = options.baseURL || 'https://api.storyblok.com/v2';
 
     // Create axios instance with default configuration
     this.axiosInstance = axios.create({
       baseURL: this.baseURL,
       timeout: options.timeout || 10000,
       headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
     });
 
@@ -147,9 +147,12 @@ export class StoryblokSdk {
    * ```
    */
   async getStories<T = Record<string, unknown>>(params?: GetStoriesParams) {
-    return await this.axiosInstance.get<StoryblokStoriesResponse<T>>("/stories", {
-      params,
-    });
+    return await this.axiosInstance.get<StoryblokStoriesResponse<T>>(
+      '/stories',
+      {
+        params,
+      },
+    );
   }
 
   /**
@@ -159,15 +162,16 @@ export class StoryblokSdk {
    * @see https://www.storyblok.com/docs/api/content-delivery/v2/getting-started/pagination
    */
   async getAllStories<T = Record<string, unknown>>(
-    params?: Omit<GetStoriesParams, "page" | "per_page">,
+    params?: Omit<GetStoriesParams, 'page' | 'per_page'>,
     options?: {
       perPage?: number;
       maxPages?: number;
       onProgress?: (page: number, totalFetched: number, total?: number) => void;
-    }
+    },
   ) {
     return fetchAllPaginated(
-      (page, perPage) => this.getStories<T>({ ...params, page, per_page: perPage }),
+      (page, perPage) =>
+        this.getStories<T>({ ...params, page, per_page: perPage }),
       (response) =>
         response.stories.map((story) => ({
           id: story.id,
@@ -176,7 +180,7 @@ export class StoryblokSdk {
           full_slug: story.full_slug,
           content: story.content,
         })),
-      options
+      options,
     );
   }
 
@@ -187,10 +191,16 @@ export class StoryblokSdk {
    * @param params - Optional parameters
    * @param params.find_by - Set to "uuid" when slug parameter is actually a UUID
    */
-  async getStory<T = Record<string, unknown>>(slug: string, params?: GetStoryParams) {
-    return await this.axiosInstance.get<StoryblokStoryResponse<T>>(`/stories/${slug}`, {
-      params,
-    });
+  async getStory<T = Record<string, unknown>>(
+    slug: string,
+    params?: GetStoryParams,
+  ) {
+    return await this.axiosInstance.get<StoryblokStoryResponse<T>>(
+      `/stories/${slug}`,
+      {
+        params,
+      },
+    );
   }
 
   /**
@@ -198,7 +208,7 @@ export class StoryblokSdk {
    */
   async getStoriesByTag<T = Record<string, unknown>>(
     tag: string,
-    params?: Omit<GetStoriesParams, "filter_query">
+    params?: Omit<GetStoriesParams, 'filter_query'>,
   ) {
     return this.getStories<T>({
       ...params,
@@ -216,12 +226,12 @@ export class StoryblokSdk {
    */
   async getAllStoriesByTag<T = Record<string, unknown>>(
     tag: string,
-    params?: Omit<GetStoriesParams, "filter_query" | "page" | "per_page">,
+    params?: Omit<GetStoriesParams, 'filter_query' | 'page' | 'per_page'>,
     options?: {
       perPage?: number;
       maxPages?: number;
       onProgress?: (page: number, totalFetched: number, total?: number) => void;
-    }
+    },
   ) {
     return this.getAllStories<T>(
       {
@@ -233,7 +243,7 @@ export class StoryblokSdk {
           },
         },
       },
-      options
+      options,
     );
   }
 
@@ -242,7 +252,7 @@ export class StoryblokSdk {
    */
   async getStoriesByPath<T = Record<string, unknown>>(
     path: string,
-    params?: Omit<GetStoriesParams, "starts_with">
+    params?: Omit<GetStoriesParams, 'starts_with'>,
   ) {
     return this.getStories<T>({
       ...params,
@@ -255,19 +265,19 @@ export class StoryblokSdk {
    */
   async getAllStoriesByPath<T = Record<string, unknown>>(
     path: string,
-    params?: Omit<GetStoriesParams, "starts_with" | "page" | "per_page">,
+    params?: Omit<GetStoriesParams, 'starts_with' | 'page' | 'per_page'>,
     options?: {
       perPage?: number;
       maxPages?: number;
       onProgress?: (page: number, totalFetched: number, total?: number) => void;
-    }
+    },
   ) {
     return this.getAllStories<T>(
       {
         ...params,
         starts_with: path,
       },
-      options
+      options,
     );
   }
 
@@ -276,7 +286,7 @@ export class StoryblokSdk {
    */
   async searchStories<T = Record<string, unknown>>(
     searchTerm: string,
-    params?: Omit<GetStoriesParams, "search_term">
+    params?: Omit<GetStoriesParams, 'search_term'>,
   ) {
     return this.getStories<T>({
       ...params,
@@ -289,19 +299,19 @@ export class StoryblokSdk {
    */
   async searchAllStories<T = Record<string, unknown>>(
     searchTerm: string,
-    params?: Omit<GetStoriesParams, "search_term" | "page" | "per_page">,
+    params?: Omit<GetStoriesParams, 'search_term' | 'page' | 'per_page'>,
     options?: {
       perPage?: number;
       maxPages?: number;
       onProgress?: (page: number, totalFetched: number, total?: number) => void;
-    }
+    },
   ) {
     return this.getAllStories<T>(
       {
         ...params,
         search_term: searchTerm,
       },
-      options
+      options,
     );
   }
 
@@ -309,7 +319,7 @@ export class StoryblokSdk {
    * Get content delivery API tags
    */
   async getTags(params?: { page?: number; per_page?: number }) {
-    return await this.axiosInstance.get<StoryblokTagsResponse>("/tags", {
+    return await this.axiosInstance.get<StoryblokTagsResponse>('/tags', {
       params,
     });
   }
@@ -325,7 +335,7 @@ export class StoryblokSdk {
     return fetchAllPaginated(
       (page, perPage) => this.getTags({ page, per_page: perPage }),
       (response) => response.tags,
-      options
+      options,
     );
   }
 
@@ -333,7 +343,7 @@ export class StoryblokSdk {
    * Get links (for navigation)
    */
   async getLinks(params?: { page?: number; per_page?: number }) {
-    return await this.axiosInstance.get<StoryblokLinksResponse>("/links", {
+    return await this.axiosInstance.get<StoryblokLinksResponse>('/links', {
       params,
     });
   }
@@ -349,17 +359,23 @@ export class StoryblokSdk {
     return fetchAllPaginated(
       (page, perPage) => this.getLinks({ page, per_page: perPage }),
       (response) => Object.values(response.links), // Convert links object to array
-      options
+      options,
     );
   }
 
   /**
    * Get datasource entries
    */
-  async getDatasourceEntries(datasource: string, params?: { page?: number; per_page?: number }) {
-    return await this.axiosInstance.get<StoryblokDatasourceEntriesResponse>("/datasource_entries", {
-      params: { datasource, ...params },
-    });
+  async getDatasourceEntries(
+    datasource: string,
+    params?: { page?: number; per_page?: number },
+  ) {
+    return await this.axiosInstance.get<StoryblokDatasourceEntriesResponse>(
+      '/datasource_entries',
+      {
+        params: { datasource, ...params },
+      },
+    );
   }
 
   /**
@@ -372,7 +388,7 @@ export class StoryblokSdk {
       perPage?: number;
       maxPages?: number;
       onProgress?: (page: number, totalFetched: number, total?: number) => void;
-    }
+    },
   ) {
     // Datasource entries support up to 1000 per page (higher than stories)
     const adjustedOptions = {
@@ -381,9 +397,10 @@ export class StoryblokSdk {
     };
 
     return fetchAllPaginated(
-      (page, perPage) => this.getDatasourceEntries(datasource, { page, per_page: perPage }),
+      (page, perPage) =>
+        this.getDatasourceEntries(datasource, { page, per_page: perPage }),
       (response) => response.datasource_entries,
-      adjustedOptions
+      adjustedOptions,
     );
   }
 }
