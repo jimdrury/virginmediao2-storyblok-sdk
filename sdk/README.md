@@ -187,6 +187,7 @@ const allNextjsPosts = await sdk.searchAllStories<BlogPost>("Next.js", {
 ```
 
 **Features:**
+
 - ✅ **Automatic pagination** - Handles all pages automatically
 - ✅ **Progress callbacks** - Real-time progress updates
 - ✅ **Configurable page size** - Up to 100 items per page (1000 for datasource entries)
@@ -227,6 +228,7 @@ const stories = await sdk.getStories({
   }
 });
 ```
+
 - `request<T>(config)` - Make custom API requests
 
 ### StoryblokManagerSdk
@@ -298,6 +300,7 @@ const customSdk = new StoryblokSdk({
 ```
 
 **Retry Behavior:**
+
 - ✅ **Always enabled**: Automatically handles all 429 errors
 - ✅ **Exponential backoff**: 50ms → 100ms → 200ms → 400ms → 800ms → 1600ms → 2000ms (max)
 - ✅ **Jitter**: Random 10% variance to prevent thundering herd

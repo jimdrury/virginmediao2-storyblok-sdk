@@ -6,16 +6,14 @@ This repository contains the @virginmediao2/storyblok-sdk, a modern TypeScript S
 
 ```
 storyblok-sdk/
-├── packages/
-│   └── sdk/                 # Main SDK package
-│       ├── src/            # Source code
-│       ├── dist/           # Built files
-│       └── README.md       # Package documentation
-├── app/
-│   └── docs/               # Documentation site
-├── CONTRIBUTING.md         # Contribution guidelines
-├── DEVELOPMENT.md          # Development setup and workflow
-└── package.json            # Root package configuration
+├── sdk/                    # Main SDK package
+│   ├── src/               # Source code
+│   ├── dist/              # Built files
+│   └── README.md          # Package documentation
+├── docs/                  # Documentation site
+├── CONTRIBUTING.md        # Contribution guidelines
+├── DEVELOPMENT.md         # Development setup and workflow
+└── package.json           # Root package configuration
 ```
 
 ## Packages
@@ -25,6 +23,7 @@ storyblok-sdk/
 The main SDK package providing both content delivery and management API access for Storyblok CMS.
 
 **Key Features:**
+
 - 🔥 **TypeScript-first** - Fully typed with generic support
 - 🚀 **Next.js optimized** - Built specifically for Next.js applications
 - 📦 **Two SDK classes** - Separate SDKs for content delivery and management
@@ -32,11 +31,11 @@ The main SDK package providing both content delivery and management API access f
 - 🔧 **Customizable** - Extensive configuration options
 - 📖 **Well-documented** - Comprehensive TypeScript interfaces and JSDoc comments
 
-For detailed usage, examples, and API reference, see the [SDK Documentation](packages/sdk/README.md).
+For detailed usage, examples, and API reference, see the [SDK Documentation](sdk/README.md).
 
 ## Documentation Site
 
-The repository includes a Next.js documentation site in the `app/docs/` directory that provides:
+The repository includes a Next.js documentation site in the `docs/` directory that provides:
 
 - Interactive API documentation
 - Live code examples

@@ -43,13 +43,16 @@ yarn commitlint --from HEAD~1 --to HEAD
 The project uses [lefthook](https://github.com/evilmartians/lefthook) for git hooks to ensure code quality:
 
 **Pre-commit hooks:**
+
 - ✅ **Lint-staged** - Runs Biome linting and formatting on staged files
 - ✅ **Type-check** - Runs TypeScript type checking on changed files
 
 **Commit-msg hooks:**
+
 - ✅ **Commitlint** - Enforces conventional commit message format
 
 **Pre-push hooks:**
+
 - ✅ **Tests** - Runs all tests before pushing
 - ✅ **Build** - Ensures the project builds successfully
 
@@ -72,6 +75,7 @@ git commit -m "WIP"
 ```
 
 **Supported types:**
+
 - `feat` - New features
 - `fix` - Bug fixes  
 - `docs` - Documentation changes

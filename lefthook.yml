@@ -6,8 +6,8 @@ pre-commit:
       run: npx @biomejs/biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
       stage_fixed: true
     type-check:
+      glob: "*.{ts,tsx}"
       run: yarn workspaces foreach -A run type-check
-      files: git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$'
 
 commit-msg:
   commands:
