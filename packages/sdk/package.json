@@ -11,19 +11,15 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "type-check": "tsc --noEmit",
-    "docs": "typedoc --out ../../app/docs/public/typedoc src/index.ts",
-    "docs:serve": "npx serve docs",
-    "format": "biome format",
-    "format:fix": "biome format --fix",
-    "lint": "biome lint",
-    "lint:fix": "biome lint --fix",
-    "check": "biome check",
-    "check:fix": "biome check --fix",
     "test": "vitest run --coverage",
     "test:fast": "vitest run",
     "test:watch": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "check": "biome check src/",
+    "check:fix": "biome check --write src/",
+    "type-check": "tsc --noEmit",
+    "docs": "typedoc src/index.ts",
+    "docs:serve": "npx serve docs"
   },
   "keywords": [
     "storyblok",
@@ -43,10 +39,11 @@
   },
   "homepage": "https://github.com/virginmediao2/storyblok-sdk#readme",
   "peerDependencies": {
-    "axios": ">=1.0.0"
+    "axios": "^1.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.18.3",
+    "@biomejs/biome": "^2.2.4",
+    "@types/node": "^24.5.2",
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
     "axios": "^1.12.2",

@@ -5,7 +5,7 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "app/docs"
+    "apps/*"
   ],
   "scripts": {
     "build": "yarn workspaces foreach -A run build",
@@ -13,15 +13,11 @@
     "test": "yarn workspaces foreach -A run test",
     "test:watch": "yarn workspaces foreach -A run test:watch",
     "test:ui": "yarn workspaces foreach -A run test:ui",
+    "check": "yarn workspaces foreach -A run check",
+    "check:fix": "yarn workspaces foreach -A run check:fix",
+    "type-check": "yarn workspaces foreach -A run type-check",
     "docs": "yarn workspaces foreach -A run docs",
     "docs:serve": "yarn workspaces foreach -A run docs:serve",
-    "format": "biome format",
-    "format:fix": "biome format --fix",
-    "lint": "biome lint",
-    "lint:fix": "biome lint --fix",
-    "check": "biome check",
-    "check:fix": "biome check --fix",
-    "type-check": "yarn workspaces foreach -A run type-check",
     "commitlint": "commitlint",
     "prepare": "lefthook install"
   },
