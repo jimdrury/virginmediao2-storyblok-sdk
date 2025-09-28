@@ -13,8 +13,6 @@
 # testing
 /coverage
 
-public/typedoc
-
 # next.js
 /.next/
 /out/

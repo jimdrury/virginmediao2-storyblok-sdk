@@ -18,7 +18,7 @@
 		"check": "biome check src/",
 		"check:fix": "biome check --write src/",
 		"type-check": "tsc --noEmit",
-		"docs": "typedoc --out ../../app/docs/public/typedoc src/index.ts",
+		"docs": "typedoc src/index.ts",
 		"docs:serve": "npx serve docs"
 	},
 	"keywords": [
