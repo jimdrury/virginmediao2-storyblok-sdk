@@ -75,7 +75,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@biomejs/biome@npm:2.2.4, @biomejs/biome@npm:^2.2.4":
+"@biomejs/biome@npm:2.2.4":
   version: 2.2.4
   resolution: "@biomejs/biome@npm:2.2.4"
   dependencies:
@@ -1546,7 +1546,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^24.5.2":
+"@types/node@npm:*":
   version: 24.5.2
   resolution: "@types/node@npm:24.5.2"
   dependencies:
@@ -1593,8 +1593,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@virginmediao2/storyblok-sdk@workspace:sdk"
   dependencies:
-    "@biomejs/biome": "npm:^2.2.4"
-    "@types/node": "npm:^24.5.2"
+    "@biomejs/biome": "npm:2.2.4"
+    "@types/node": "npm:^22.0.0"
     "@vitest/coverage-v8": "npm:^3.2.4"
     "@vitest/ui": "npm:^3.2.4"
     axios: "npm:^1.12.2"
@@ -2332,7 +2332,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "docs@workspace:docs"
   dependencies:
-    "@biomejs/biome": "npm:^2.2.4"
+    "@biomejs/biome": "npm:2.2.4"
     "@tailwindcss/postcss": "npm:^4.1.13"
     "@types/node": "npm:^22.0.0"
     "@types/react": "npm:^19.1.14"
