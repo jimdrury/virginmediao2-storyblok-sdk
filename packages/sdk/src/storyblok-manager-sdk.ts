@@ -276,10 +276,18 @@ export class StoryblokManagerSdk {
     const formData = new FormData();
     formData.append('file', file as Blob, filename);
 
-    if (options?.alt) formData.append('alt', options.alt);
-    if (options?.title) formData.append('title', options.title);
-    if (options?.copyright) formData.append('copyright', options.copyright);
-    if (options?.source) formData.append('source', options.source);
+    if (options?.alt) {
+      formData.append('alt', options.alt);
+    }
+    if (options?.title) {
+      formData.append('title', options.title);
+    }
+    if (options?.copyright) {
+      formData.append('copyright', options.copyright);
+    }
+    if (options?.source) {
+      formData.append('source', options.source);
+    }
 
     return await this.axiosInstance.post<StoryblokAsset>(
       `/spaces/${spaceId}/assets`,

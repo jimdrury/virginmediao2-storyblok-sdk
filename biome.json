@@ -19,5 +19,13 @@
     "formatter": {
       "quoteStyle": "single"
     }
+  },
+  "linter": {
+    "rules": {
+      "style": {
+        "noUselessElse": "error",
+        "useBlockStatements": "error"
+      }
+    }
   }
 }
