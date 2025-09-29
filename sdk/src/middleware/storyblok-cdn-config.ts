@@ -1,13 +1,28 @@
-import type { AxiosInstance, AxiosResponse } from 'axios';
+import type {
+  AxiosInstance,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
+import {
+  addParamIfNotPresent,
+  isStoryblokCdnResponse,
+  standardErrorHandler,
+} from './shared-utils';
 
-export interface StoryblokCdnDomainConfig {
+export interface StoryblokCdnConfigOptions {
   /**
-   * Custom domain to replace a.storyblok.com for assets
+   * Access token for Storyblok CDN API (required)
+   */
+  accessToken: string;
+  /**
+   * Custom domain to replace a.storyblok.com for assets (optional)
+   * When provided, enables automatic asset URL replacement
    * @example "https://assets.example.com"
    */
-  assetDomain: `https://${string}`;
+  assetDomain?: `https://${string}`;
   /**
-   * Optional array of allowed space IDs. If provided, only URLs containing these space IDs will be processed.
+   * Optional array of allowed space IDs. Only works when assetDomain is provided.
+   * If provided, only URLs containing these space IDs will be processed.
    * URLs with space IDs not in this list will be set to empty string.
    * @example ["329767", "123456"]
    */
@@ -15,39 +30,62 @@ export interface StoryblokCdnDomainConfig {
 }
 
 /**
- * Factory function that creates a Storyblok CDN domain middleware
+ * Factory function that creates a unified Storyblok CDN configuration middleware
  *
- * This middleware automatically replaces a.storyblok.com asset URLs with a custom domain
- * in response data. It processes all string fields in the response that contain asset URLs.
- * Optionally filters URLs based on space IDs.
+ * This middleware combines CDN authentication and asset domain replacement functionality:
+ * - Always adds the access token to all requests as a query parameter
+ * - Optionally replaces a.storyblok.com asset URLs with a custom domain (when assetDomain is provided)
+ * - Optionally filters URLs based on space IDs (when allowedSpaceIds is provided with assetDomain)
  *
- * @param config - Configuration for the CDN domain middleware
- * @param config.assetDomain - Custom domain to use for assets
- * @param config.allowedSpaceIds - Optional array of allowed space IDs for filtering
+ * @param config - Configuration for the CDN middleware
+ * @param config.accessToken - Required access token for authentication
+ * @param config.assetDomain - Optional custom domain for assets
+ * @param config.allowedSpaceIds - Optional array of allowed space IDs (requires assetDomain)
  * @returns A middleware function that can be applied to an AxiosInstance
  *
  * @example
  * ```typescript
- * import { storyblokCdnDomain } from "@virginmediao2/storyblok-sdk";
+ * import { storyblokCdnConfig } from "@virginmediao2/storyblok-sdk";
  *
- * const cdnDomainMiddleware = storyblokCdnDomain({
- *   assetDomain: "https://assets.example.com",
+ * // Basic usage - authentication only
+ * const basicMiddleware = storyblokCdnConfig({
+ *   accessToken: "your-access-token"
+ * });
+ *
+ * // With custom asset domain
+ * const assetMiddleware = storyblokCdnConfig({
+ *   accessToken: "your-access-token",
+ *   assetDomain: "https://assets.example.com"
+ * });
+ *
+ * // Multi-tenant with space filtering
+ * const multiTenantMiddleware = storyblokCdnConfig({
+ *   accessToken: "your-access-token",
+ *   assetDomain: "https://cdn.myapp.com",
  *   allowedSpaceIds: ["329767", "123456"]
  * });
  *
  * // Apply to axios instance
- * cdnDomainMiddleware(axiosInstance);
- *
- * // This will automatically replace:
- * // https://a.storyblok.com/f/329767/image.jpg -> https://assets.example.com/f/329767/image.jpg
- * // Asset objects with blocked URLs will be replaced with empty asset structure
+ * basicMiddleware(axiosInstance);
  * ```
  */
-export const storyblokCdnDomain =
-  (config: StoryblokCdnDomainConfig) =>
+export const storyblokCdnConfig =
+  (config: StoryblokCdnConfigOptions) =>
   (axiosInstance: AxiosInstance): void => {
-    axiosInstance.interceptors.response.use(
-      (response: AxiosResponse) => {
+    // Add request interceptor for authentication
+    axiosInstance.interceptors.request.use(
+      (requestConfig: InternalAxiosRequestConfig) => {
+        // Add access token if not already present
+        addParamIfNotPresent(requestConfig, 'token', config.accessToken);
+        return requestConfig;
+      },
+      standardErrorHandler,
+    );
+
+    // Add response interceptor for asset domain replacement (if configured)
+    if (config.assetDomain) {
+      const assetDomain = config.assetDomain; // Type guard for closure
+      axiosInstance.interceptors.response.use((response: AxiosResponse) => {
         if (!isStoryblokCdnResponse(response)) {
           return response;
         }
@@ -55,25 +93,15 @@ export const storyblokCdnDomain =
         // Process the response data to replace asset URLs
         const processedData = processAssetUrls(
           response.data,
-          config.assetDomain,
+          assetDomain,
           config.allowedSpaceIds,
         );
         response.data = processedData;
 
         return response;
-      },
-      (error) => Promise.reject(error),
-    );
+      }, standardErrorHandler);
+    }
   };
-
-/**
- * Checks if the response is from a Storyblok CDN endpoint
- */
-function isStoryblokCdnResponse(response: AxiosResponse): boolean {
-  const config = response.config;
-  const url = config.url || '';
-  return url.includes('/stories') || url.includes('/links');
-}
 
 /**
  * Recursively processes an object to replace asset URLs

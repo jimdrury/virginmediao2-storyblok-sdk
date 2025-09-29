@@ -1,25 +1,23 @@
-'use cache';
-
 import type { Metadata } from 'next';
 import type { FC } from 'react';
 import { getAllLinks } from '@/storyblok/utils/get-all-links';
 import { getStory } from '@/storyblok/utils/get-story';
+import { PreviewStory } from '@/storyblok-preview';
 
 export const generateStaticParams = async () => {
   const links = await getAllLinks();
   return links.map((link) => ({
-    page: link.real_path.split('/'),
+    page: link.real_path.split('/').filter(Boolean),
   }));
 };
 
 interface PageProps {
   params: Promise<{ page: string[] }>;
 }
-export const generateMetadata = async ({
-  params,
-}: PageProps): Promise<Metadata> => {
-  const resolvedParams = await params;
-  const slug = resolvedParams.page?.join('/') ?? '/';
+
+export const generateMetadata = async (props: PageProps): Promise<Metadata> => {
+  const params = await props.params;
+  const slug = params.page?.join('/') ?? '/';
   const story = await getStory(slug);
 
   if (!story) {
@@ -33,10 +31,16 @@ export const generateMetadata = async ({
 
 const Page: FC<PageProps> = async (props) => {
   const params = await props.params;
+  // const draft = await draftMode();
   const slug = params.page?.join('/') ?? '/';
-  const story = await getStory(slug);
 
-  return <pre>{JSON.stringify(story, null, 2)}</pre>;
+  // if (draft.isEnabled) {
+  const story = await getStory(slug, { version: 'draft' });
+  return <PreviewStory story={story} />;
+  // }
+
+  // const story = await getStory(slug);
+  // return <RenderStory story={story} />;
 };
 
 export default Page;

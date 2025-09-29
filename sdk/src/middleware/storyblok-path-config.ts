@@ -3,9 +3,22 @@ import type {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
-import type { StoryblokLink, StoryblokStory } from '../types';
+import type {
+  StoryblokComponent,
+  StoryblokLink,
+  StoryblokStory,
+} from '../types';
+import {
+  extractSlugFromUrl,
+  isIndividualStoryRequest,
+  isStoriesOrLinksRequest,
+  isStoryblokCdnRequest,
+  isStoryblokCdnResponse,
+  joinPaths,
+  standardErrorHandler,
+} from './shared-utils';
 
-export interface StoryblokBasePathConfig {
+export interface StoryblokPathConfigOptions {
   /**
    * The base path to automatically append to starts_with parameter
    * for Stories and GetLinks API calls
@@ -20,7 +33,7 @@ export interface StoryblokBasePathConfig {
 }
 
 /**
- * Factory function that creates a Storyblok base path middleware
+ * Factory function that creates a Storyblok path configuration middleware
  *
  * This middleware automatically handles base path configuration for Storyblok API calls:
  * - For Stories and GetLinks API calls: appends a `starts_with` query parameter with the configured base path
@@ -28,20 +41,20 @@ export interface StoryblokBasePathConfig {
  * - Optionally removes the basePath from response data paths when `rewriteLinks` is enabled
  * If a `starts_with` parameter is already present, it will be left unchanged.
  *
- * @param config - Configuration for the base path middleware
+ * @param config - Configuration for the path middleware
  * @returns A middleware function that can be applied to an AxiosInstance
  *
  * @example
  * ```typescript
- * import { storyblokBasePath } from "@virginmediao2/storyblok-sdk";
+ * import { storyblokPathConfig } from "@virginmediao2/storyblok-sdk";
  *
- * const basePathMiddleware = storyblokBasePath({
+ * const pathMiddleware = storyblokPathConfig({
  *   basePath: "blog/",
  *   rewriteLinks: true // Optional: rewrite response paths
  * });
  *
  * // Apply to axios instance
- * basePathMiddleware(axiosInstance);
+ * pathMiddleware(axiosInstance);
  *
  * // This will automatically:
  * // - Add starts_with=blog/ to /stories and /links requests
@@ -49,8 +62,8 @@ export interface StoryblokBasePathConfig {
  * // - If rewriteLinks=true: Remove "blog/" from response paths: "blog/my-article" -> "/my-article"
  * ```
  */
-export const storyblokBasePath =
-  (config: StoryblokBasePathConfig) =>
+export const storyblokPathConfig =
+  (config: StoryblokPathConfigOptions) =>
   (axiosInstance: AxiosInstance): void => {
     axiosInstance.interceptors.request.use(
       (requestConfig: InternalAxiosRequestConfig) => {
@@ -70,7 +83,7 @@ export const storyblokBasePath =
         if (isIndividualStoryRequest(url)) {
           // For individual story requests, prepend the basePath to the slug
           const slug = extractSlugFromUrl(url);
-          if (slug && !slug.startsWith(config.basePath)) {
+          if (slug !== null && !slug.startsWith(config.basePath)) {
             // Join basePath and slug, handling potential double slashes
             const newSlug = joinPaths(config.basePath, slug);
             requestConfig.url = url.replace(
@@ -96,115 +109,43 @@ export const storyblokBasePath =
 
         return requestConfig;
       },
-      (error) => Promise.reject(error),
+      standardErrorHandler,
     );
 
-    // Add response interceptor to remove basePath from response data (if enabled)
+    // Add response interceptor for link rewriting if enabled
     if (config.rewriteLinks) {
-      axiosInstance.interceptors.response.use(
-        (response: AxiosResponse) => {
-          if (!isStoryblokCdnResponse(response)) {
-            return response;
-          }
-
-          // Process the response data to remove basePath from paths
-          const processedData = removeBasePathFromResponse(
-            response.data,
-            config.basePath,
-          );
-          response.data = processedData;
-
+      axiosInstance.interceptors.response.use((response: AxiosResponse) => {
+        // Only process Storyblok CDN responses
+        if (!isStoryblokCdnResponse(response)) {
           return response;
-        },
-        (error) => Promise.reject(error),
-      );
+        }
+
+        // Process the response data to remove basePath from paths
+        const processedData = removeBasePathFromResponse(
+          response.data,
+          config.basePath,
+        );
+        response.data = processedData;
+
+        return response;
+      }, standardErrorHandler);
     }
   };
 
 /**
- * Checks if the request is to a Storyblok CDN endpoint
- */
-function isStoryblokCdnRequest(config: InternalAxiosRequestConfig): boolean {
-  const url = config.url || '';
-  return url.includes('/stories') || url.includes('/links');
-}
-
-/**
- * Checks if the request is to Stories, GetLinks API endpoints, or individual story endpoints
- */
-function isStoriesOrLinksRequest(config: InternalAxiosRequestConfig): boolean {
-  const url = config.url || '';
-
-  // Check for Stories API endpoints (both /stories and /stories/{slug})
-  if (url.includes('/stories')) {
-    return true;
-  }
-
-  // Check for GetLinks API endpoints
-  if (url.includes('/links')) {
-    return true;
-  }
-
-  return false;
-}
-
-/**
- * Checks if the request is to an individual story endpoint (e.g., /stories/some-slug)
- */
-function isIndividualStoryRequest(url: string): boolean {
-  // Use glob pattern matching: /stories/* (but not /stories itself)
-  return url.startsWith('/stories/') && url !== '/stories';
-}
-
-/**
- * Extracts the slug from a story URL
- */
-function extractSlugFromUrl(url: string): string | null {
-  if (!isIndividualStoryRequest(url)) {
-    return null;
-  }
-
-  // Remove query parameters and extract slug
-  const urlWithoutQuery = url.split('?')[0];
-  const slug = urlWithoutQuery.replace('/stories/', '');
-  return slug || null;
-}
-
-/**
- * Joins two path segments, handling double slashes and ensuring proper path structure
- */
-function joinPaths(basePath: string, slug: string): string {
-  // Remove trailing slash from basePath and leading slash from slug
-  const cleanBasePath = basePath.replace(/\/$/, '');
-  const cleanSlug = slug.replace(/^\//, '');
-
-  // Join with a single slash
-  return `${cleanBasePath}/${cleanSlug}`;
-}
-
-/**
- * Checks if the response is from a Storyblok CDN endpoint
- */
-function isStoryblokCdnResponse(response: AxiosResponse): boolean {
-  const config = response.config;
-  const url = config.url || '';
-  return url.includes('/stories') || url.includes('/links');
-}
-
-/**
- * Type for Storyblok API response data
+ * Type for Storyblok response data that might contain stories, links, or other data
  */
 type StoryblokResponseData =
   | {
-      story: StoryblokStory;
-      rels?: StoryblokStory[];
-      links?: StoryblokStory[];
+      story: StoryblokStory<StoryblokComponent>;
+      rels?: StoryblokStory<StoryblokComponent>[];
+      links?: StoryblokStory<StoryblokComponent>[];
       [key: string]: unknown;
     }
   | {
-      stories: StoryblokStory[];
-      rels?: StoryblokStory[];
-      links?: StoryblokStory[];
+      stories: StoryblokStory<StoryblokComponent>[];
+      rels?: StoryblokStory<StoryblokComponent>[];
+      links?: StoryblokStory<StoryblokComponent>[];
       [key: string]: unknown;
     }
   | { links: Record<string, StoryblokLink>; [key: string]: unknown }
@@ -225,13 +166,18 @@ function removeBasePathFromResponse(
   if ('story' in data && data.story) {
     const processedData: Record<string, unknown> = {
       ...data,
-      story: processStoryRecursively(data.story as StoryblokStory, basePath),
+      story: processStoryRecursively(
+        data.story as StoryblokStory<StoryblokComponent>,
+        basePath,
+      ),
     };
 
     // Process rels array if present
     if ('rels' in data && Array.isArray(data.rels)) {
-      processedData.rels = (data.rels as StoryblokStory[]).map(
-        (story: StoryblokStory) => processStoryRecursively(story, basePath),
+      processedData.rels = (
+        data.rels as StoryblokStory<StoryblokComponent>[]
+      ).map((story: StoryblokStory<StoryblokComponent>) =>
+        processStoryRecursively(story, basePath),
       );
     }
 
@@ -270,7 +216,10 @@ function removeBasePathFromResponse(
           'slug' in item &&
           'content' in item
         ) {
-          return processStoryRecursively(item as StoryblokStory, basePath);
+          return processStoryRecursively(
+            item as StoryblokStory<StoryblokComponent>,
+            basePath,
+          );
         }
         return item;
       });
@@ -283,15 +232,18 @@ function removeBasePathFromResponse(
   if ('stories' in data && Array.isArray(data.stories)) {
     const processedData: Record<string, unknown> = {
       ...data,
-      stories: (data.stories as StoryblokStory[]).map((story: StoryblokStory) =>
-        processStoryRecursively(story, basePath),
+      stories: (data.stories as StoryblokStory<StoryblokComponent>[]).map(
+        (story: StoryblokStory<StoryblokComponent>) =>
+          processStoryRecursively(story, basePath),
       ),
     };
 
     // Process rels array if present
     if ('rels' in data && Array.isArray(data.rels)) {
-      processedData.rels = (data.rels as StoryblokStory[]).map(
-        (story: StoryblokStory) => processStoryRecursively(story, basePath),
+      processedData.rels = (
+        data.rels as StoryblokStory<StoryblokComponent>[]
+      ).map((story: StoryblokStory<StoryblokComponent>) =>
+        processStoryRecursively(story, basePath),
       );
     }
 
@@ -306,7 +258,7 @@ function removeBasePathFromResponse(
         if ('real_path' in item) {
           return removeBasePathFromLink(item as StoryblokLink, basePath);
         }
-        // Check if this is a simplified story object (has full_slug but not all story properties)
+        // Check if this is a simplified story object
         if ('full_slug' in item) {
           const typedItem = item as Record<string, unknown>;
           return {
@@ -330,7 +282,10 @@ function removeBasePathFromResponse(
           'slug' in item &&
           'content' in item
         ) {
-          return processStoryRecursively(item as StoryblokStory, basePath);
+          return processStoryRecursively(
+            item as StoryblokStory<StoryblokComponent>,
+            basePath,
+          );
         }
         return item;
       });
@@ -339,111 +294,160 @@ function removeBasePathFromResponse(
     return processedData;
   }
 
-  // Handle links response
-  if ('links' in data && data.links) {
+  // Handle links response (Record<string, StoryblokLink>)
+  if (
+    'links' in data &&
+    typeof data.links === 'object' &&
+    !Array.isArray(data.links)
+  ) {
+    const processedData: Record<string, unknown> = { ...data };
+    const linksObject = data.links as Record<string, StoryblokLink>;
     const processedLinks: Record<string, StoryblokLink> = {};
-    for (const [key, link] of Object.entries(data.links)) {
-      processedLinks[key] = removeBasePathFromLink(
-        link as StoryblokLink,
-        basePath,
-      );
-    }
-    return {
-      ...data,
-      links: processedLinks,
-    };
+
+    Object.entries(linksObject).forEach(([key, link]) => {
+      processedLinks[key] = removeBasePathFromLink(link, basePath);
+    });
+
+    processedData.links = processedLinks;
+    return processedData;
   }
 
   return data;
 }
 
 /**
- * Processes a story by removing basePath from its path fields
- * Note: Nested story objects in content are handled by storyblokLinksResolver
+ * Processes a story object recursively to remove basePath from relevant fields
  */
 function processStoryRecursively(
-  story: StoryblokStory,
+  story: StoryblokStory<StoryblokComponent>,
   basePath: string,
-): StoryblokStory {
-  return removeBasePathFromStory(story, basePath);
-}
-
-/**
- * Removes basePath from a single story's path fields
- */
-function removeBasePathFromStory(
-  story: StoryblokStory,
-  basePath: string,
-): StoryblokStory {
-  const cleanBasePath = basePath.replace(/\/$/, ''); // Remove trailing slash
+): StoryblokStory<StoryblokComponent> {
+  const basePathWithoutSlash = basePath.replace(/\/$/, '');
 
   return {
     ...story,
-    slug: removeBasePathFromSlug(story.slug, cleanBasePath),
-    full_slug: removeBasePathFromSlug(story.full_slug, cleanBasePath),
-    alternates: story.alternates?.map((alternate) => ({
-      ...alternate,
-      slug: removeBasePathFromSlug(alternate.slug, cleanBasePath),
-      full_slug: removeBasePathFromSlug(alternate.full_slug, cleanBasePath),
-    })),
-    translated_slugs: story.translated_slugs?.map((translatedSlug) => ({
-      ...translatedSlug,
-      path: removeBasePathFromSlug(translatedSlug.path, cleanBasePath),
-    })),
+    slug: removeBasePathFromSlug(story.slug, basePathWithoutSlash),
+    full_slug: removeBasePathFromSlug(story.full_slug, basePathWithoutSlash),
     default_full_slug: story.default_full_slug
-      ? removeBasePathFromSlug(story.default_full_slug, cleanBasePath)
+      ? removeBasePathFromSlug(story.default_full_slug, basePathWithoutSlash)
       : story.default_full_slug,
+    alternates: story.alternates.map(
+      (alternate: {
+        id: number;
+        name: string;
+        slug: string;
+        published: boolean;
+        full_slug: string;
+        is_folder: boolean;
+        parent_id: number | null;
+      }) => ({
+        ...alternate,
+        slug: removeBasePathFromSlug(alternate.slug, basePathWithoutSlash),
+        full_slug: removeBasePathFromSlug(
+          alternate.full_slug,
+          basePathWithoutSlash,
+        ),
+      }),
+    ),
+    translated_slugs: story.translated_slugs.map(
+      (translatedSlug: {
+        path: string;
+        name: string | null;
+        lang: string;
+      }) => ({
+        ...translatedSlug,
+        path: removeBasePathFromSlug(translatedSlug.path, basePathWithoutSlash),
+      }),
+    ),
+    content: processContentRecursively(
+      story.content as unknown as Record<string, unknown>,
+      basePath,
+    ) as unknown as StoryblokComponent,
   };
 }
 
 /**
- * Removes basePath from a single link's path fields
+ * Processes story content recursively to remove basePath from any URL-like fields
+ */
+function processContentRecursively(
+  content: Record<string, unknown>,
+  basePath: string,
+): Record<string, unknown> {
+  const basePathWithoutSlash = basePath.replace(/\/$/, '');
+  const processed: Record<string, unknown> = {};
+
+  Object.entries(content).forEach(([key, value]) => {
+    if (typeof value === 'string' && value.startsWith(basePathWithoutSlash)) {
+      // If it looks like a path that starts with our basePath, remove it
+      processed[key] = removeBasePathFromSlug(value, basePathWithoutSlash);
+    } else if (Array.isArray(value)) {
+      // Process arrays recursively
+      processed[key] = value.map((item) => {
+        if (typeof item === 'string' && item.startsWith(basePathWithoutSlash)) {
+          return removeBasePathFromSlug(item, basePathWithoutSlash);
+        }
+        if (item && typeof item === 'object') {
+          return processContentRecursively(
+            item as Record<string, unknown>,
+            basePath,
+          );
+        }
+        return item;
+      });
+    } else if (value && typeof value === 'object') {
+      // Process nested objects recursively
+      processed[key] = processContentRecursively(
+        value as Record<string, unknown>,
+        basePath,
+      );
+    } else {
+      processed[key] = value;
+    }
+  });
+
+  return processed;
+}
+
+/**
+ * Removes basePath from a StoryblokLink object
  */
 function removeBasePathFromLink(
   link: StoryblokLink,
   basePath: string,
 ): StoryblokLink {
-  const cleanBasePath = basePath.replace(/\/$/, ''); // Remove trailing slash
+  const basePathWithoutSlash = basePath.replace(/\/$/, '');
 
   return {
     ...link,
-    slug: removeBasePathFromSlug(link.slug, cleanBasePath),
+    slug: removeBasePathFromSlug(link.slug, basePathWithoutSlash),
     path: link.path
-      ? removeBasePathFromSlug(link.path, cleanBasePath)
+      ? removeBasePathFromSlug(link.path, basePathWithoutSlash)
       : link.path,
-    real_path: removeBasePathFromSlug(link.real_path, cleanBasePath),
-    alternates: link.alternates?.map((alternate) => ({
-      ...alternate,
-      path: removeBasePathFromSlug(alternate.path, cleanBasePath),
-      translated_slug: removeBasePathFromSlug(
-        alternate.translated_slug,
-        cleanBasePath,
-      ),
-    })),
+    real_path: removeBasePathFromSlug(link.real_path, basePathWithoutSlash),
+    alternates: link.alternates
+      ? link.alternates.map((alternate) => ({
+          ...alternate,
+          path: removeBasePathFromSlug(alternate.path, basePathWithoutSlash),
+          translated_slug: removeBasePathFromSlug(
+            alternate.translated_slug,
+            basePathWithoutSlash,
+          ),
+        }))
+      : link.alternates,
   };
 }
 
 /**
- * Removes basePath from a slug/path string and replaces with '/'
+ * Removes basePath from a slug/path string
  */
-function removeBasePathFromSlug(slug: string, basePath: string): string {
-  if (!slug || !basePath) {
-    return slug;
+function removeBasePathFromSlug(
+  slug: string,
+  basePathWithoutSlash: string,
+): string {
+  if (slug.startsWith(basePathWithoutSlash)) {
+    const remaining = slug.substring(basePathWithoutSlash.length);
+    // If what remains starts with a slash, keep it; otherwise add one
+    return remaining.startsWith('/') ? remaining : `/${remaining}`;
   }
-
-  // Clean the basePath by removing trailing slash for comparison
-  const cleanBasePath = basePath.replace(/\/$/, '');
-
-  // Check if the slug starts with the basePath (with or without trailing slash)
-  if (slug === cleanBasePath || slug.startsWith(`${cleanBasePath}/`)) {
-    if (slug === cleanBasePath) {
-      // If slug exactly matches basePath, return '/'
-      return '/';
-    }
-    // If slug starts with basePath + '/', remove the basePath part and keep the '/'
-    const remainingPath = slug.substring(cleanBasePath.length);
-    return remainingPath.startsWith('/') ? remainingPath : `/${remainingPath}`;
-  }
-
   return slug;
 }

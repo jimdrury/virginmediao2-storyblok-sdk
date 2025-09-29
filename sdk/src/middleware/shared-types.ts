@@ -1,33 +1,38 @@
 import type {
+  StoryblokComponent,
   StoryblokStoriesResponse,
   StoryblokStory,
   StoryblokStoryResponse,
 } from '../types';
 
-export interface StoryblokStoriesResponseWithRels
-  extends Omit<StoryblokStoriesResponse, 'rels'> {
-  rels: StoryblokStory[];
+export interface StoryblokStoriesResponseWithRels<
+  T extends StoryblokComponent = StoryblokComponent,
+> extends Omit<StoryblokStoriesResponse<T>, 'rels'> {
+  rels: StoryblokStory<T>[];
 }
 
-export interface StoryblokStoryResponseWithRels
-  extends Omit<StoryblokStoryResponse, 'rels'> {
-  rels: StoryblokStory[];
+export interface StoryblokStoryResponseWithRels<
+  T extends StoryblokComponent = StoryblokComponent,
+> extends Omit<StoryblokStoryResponse<T>, 'rels'> {
+  rels: StoryblokStory<T>[];
 }
 
-export interface StoryblokStoriesResponseWithLinks
-  extends Omit<StoryblokStoriesResponse, 'links'> {
-  links: StoryblokStory[];
+export interface StoryblokStoriesResponseWithLinks<
+  T extends StoryblokComponent = StoryblokComponent,
+> extends Omit<StoryblokStoriesResponse<T>, 'links'> {
+  links: StoryblokStory<T>[];
 }
 
-export interface StoryblokStoryResponseWithLinks
-  extends Omit<StoryblokStoryResponse, 'links'> {
-  links: StoryblokStory[];
+export interface StoryblokStoryResponseWithLinks<
+  T extends StoryblokComponent = StoryblokComponent,
+> extends Omit<StoryblokStoryResponse<T>, 'links'> {
+  links: StoryblokStory<T>[];
 }
 
-export type StoryblokApiResponseWithStoryRels =
-  | StoryblokStoriesResponseWithRels
-  | StoryblokStoryResponseWithRels;
+export type StoryblokApiResponseWithStoryRels<
+  T extends StoryblokComponent = StoryblokComponent,
+> = StoryblokStoriesResponseWithRels<T> | StoryblokStoryResponseWithRels<T>;
 
-export type StoryblokApiResponseWithStoryLinks =
-  | StoryblokStoriesResponseWithLinks
-  | StoryblokStoryResponseWithLinks;
+export type StoryblokApiResponseWithStoryLinks<
+  T extends StoryblokComponent = StoryblokComponent,
+> = StoryblokStoriesResponseWithLinks<T> | StoryblokStoryResponseWithLinks<T>;
