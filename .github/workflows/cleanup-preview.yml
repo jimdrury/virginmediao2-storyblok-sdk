@@ -1,0 +1,22 @@
+name: Cleanup Preview
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    name: Cleanup Preview
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cleanup preview directory
+        run: |
+          # This will be handled by the gh-pages action
+          echo "Preview cleanup will be handled by the next deployment"
