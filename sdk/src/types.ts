@@ -6,10 +6,6 @@ type AxiosMiddleware = (axiosInstance: AxiosInstance) => void;
 // Base interfaces for SDK configuration
 export interface BaseStoryblokOptions {
   /**
-   * Access token for Storyblok API
-   */
-  accessToken: string;
-  /**
    * Base URL for Storyblok API
    * @default 'https://api.storyblok.com/v2'
    */
@@ -151,11 +147,11 @@ export interface StoryblokFilterOperators {
   /**
    * In array
    */
-  in?: string;
+  in?: string | number | boolean;
   /**
    * Not in array
    */
-  not_in_array?: string;
+  not_in_array?: string | number | boolean;
   /**
    * Contains (for arrays and strings)
    */
@@ -183,15 +179,15 @@ export interface StoryblokFilterOperators {
   /**
    * Like (partial match)
    */
-  like?: string;
+  like?: string | number;
   /**
    * Not like
    */
-  not_like?: string;
+  not_like?: string | number;
   /**
    * Regex match
    */
-  regex?: string;
+  regex?: string | number;
 }
 
 export type StoryblokFilterQuery = Record<
@@ -304,8 +300,75 @@ export interface StoryblokTagsResponse {
   tags: StoryblokTag[];
 }
 
+// Link object structure based on Storyblok API documentation
+export interface StoryblokLink {
+  id: number;
+  uuid: string;
+  slug: string;
+  path: string | null;
+  real_path: string;
+  name: string;
+  published: boolean;
+  parent_id: number | null;
+  is_folder: boolean;
+  is_startpage: boolean;
+  position: number;
+  published_at?: string; // Only included if include_dates=1
+  created_at?: string; // Only included if include_dates=1
+  updated_at?: string; // Only included if include_dates=1
+  alternates?: Array<{
+    path: string;
+    name: string;
+    lang: string;
+    published: boolean;
+    translated_slug: string;
+  }>;
+}
+
 export interface StoryblokLinksResponse {
-  links: Record<string, unknown>;
+  links: Record<string, StoryblokLink>;
+}
+
+// Parameters for getLinks function based on Storyblok API documentation
+export interface GetLinksParams {
+  /**
+   * Filter by full_slug. Can be used to retrieve all links from a specific folder.
+   * Examples: starts_with=de/beitraege, starts_with=en/posts
+   */
+  starts_with?: string;
+  /**
+   * Version to retrieve. Default: 'published'. Possible values: 'draft', 'published'
+   */
+  version?: 'draft' | 'published';
+  /**
+   * Used to access a particular cached version of a published story by providing a Unix timestamp.
+   * Further information is found under Cache Invalidation.
+   */
+  cv?: number;
+  /**
+   * Filters links by parent_id. Can be set to 0 to return entries not located in a folder.
+   * In contrast, specifying a folder's id returns only entries located in this particular folder.
+   */
+  with_parent?: number;
+  /**
+   * Default: 0. If set to 1, the following fields are included in the response:
+   * published_at, created_at, updated_at.
+   */
+  include_dates?: 0 | 1;
+  /**
+   * Page number for pagination. Default: 1
+   */
+  page?: number;
+  /**
+   * Number of items per page. Default: 25. Max: 1000
+   */
+  per_page?: number;
+  /**
+   * For spaces created before May 9th, 2023, the links endpoint is not paginated by default.
+   * Setting this parameter to 1 enables pagination. This parameter does not impact spaces
+   * created after May 9th, 2023, i.e., pagination cannot be disabled for these spaces.
+   */
+  paginated?: 0 | 1;
 }
 
 export interface StoryblokDatasourceEntry {

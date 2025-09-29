@@ -1,7 +1,7 @@
 import axios, { type AxiosInstance } from 'axios';
-import { storyblokCdnAuth } from './middleware';
 import type {
   BaseStoryblokOptions,
+  GetLinksParams,
   GetStoriesParams,
   GetStoryParams,
   StoryblokDatasourceEntriesResponse,
@@ -72,10 +72,6 @@ export class StoryblokSdk {
       },
     });
 
-    // Apply CDN auth middleware automatically
-    storyblokCdnAuth({ accessToken: options.accessToken })(this.axiosInstance);
-
-    // Apply any additional middlewares
     options.middlewares?.forEach((middleware) => {
       middleware(this.axiosInstance);
     });
@@ -311,24 +307,105 @@ export class StoryblokSdk {
   }
 
   /**
-   * Get links (for navigation)
+   * Get links (for navigation) with comprehensive filtering and pagination support
+   *
+   * Retrieves links from Storyblok with support for filtering by path, version,
+   * parent folder, and pagination. This method returns a single page of results.
+   *
+   * @param params - Optional parameters for filtering and pagination
+   * @param params.starts_with - Filter by full_slug. Can be used to retrieve all links from a specific folder
+   * @param params.version - Version to retrieve. Default: 'published'. Possible values: 'draft', 'published'
+   * @param params.cv - Used to access a particular cached version by providing a Unix timestamp
+   * @param params.with_parent - Filters links by parent_id. Can be set to 0 to return entries not in a folder
+   * @param params.include_dates - If set to 1, includes published_at, created_at, updated_at fields
+   * @param params.page - Page number for pagination (default: 1)
+   * @param params.per_page - Number of items per page (default: 25, max: 1000)
+   * @param params.paginated - For spaces created before May 9th, 2023, enables pagination
+   *
+   * @returns Promise resolving to links response with pagination info
+   *
+   * @example
+   * ```typescript
+   * // Get all published links
+   * const response = await sdk.getLinks();
+   *
+   * // Get links from a specific folder
+   * const folderLinks = await sdk.getLinks({
+   *   starts_with: 'blog/',
+   *   version: 'published'
+   * });
+   *
+   * // Get links with dates included
+   * const linksWithDates = await sdk.getLinks({
+   *   include_dates: 1,
+   *   per_page: 50
+   * });
+   *
+   * // Get links from a specific parent folder
+   * const childLinks = await sdk.getLinks({
+   *   with_parent: 12345
+   * });
+   * ```
    */
-  async getLinks(params?: { page?: number; per_page?: number }) {
+  async getLinks(params?: GetLinksParams) {
     return await this.axiosInstance.get<StoryblokLinksResponse>('/links', {
       params,
     });
   }
 
   /**
-   * Get all links with automatic pagination handling
+   * Get all links with automatic pagination handling and comprehensive filtering support
+   *
+   * This will fetch all links across multiple pages using Storyblok's pagination system
+   * with support for all filtering options available in the links API.
+   *
+   * @param params - Optional parameters for filtering links
+   * @param params.starts_with - Filter by full_slug. Can be used to retrieve all links from a specific folder
+   * @param params.version - Version to retrieve. Default: 'published'. Possible values: 'draft', 'published'
+   * @param params.cv - Used to access a particular cached version by providing a Unix timestamp
+   * @param params.with_parent - Filters links by parent_id. Can be set to 0 to return entries not in a folder
+   * @param params.include_dates - If set to 1, includes published_at, created_at, updated_at fields
+   * @param params.paginated - For spaces created before May 9th, 2023, enables pagination
+   * @param options - Pagination and progress tracking options
+   * @param options.perPage - Number of items per page (default: 25, max: 1000)
+   * @param options.maxPages - Maximum number of pages to fetch
+   * @param options.onProgress - Callback function called for each page fetched
+   *
+   * @returns Promise resolving to array of all links
+   *
+   * @example
+   * ```typescript
+   * // Get all published links
+   * const allLinks = await sdk.getAllLinks();
+   *
+   * // Get all links from a specific folder
+   * const folderLinks = await sdk.getAllLinks({
+   *   starts_with: 'blog/',
+   *   version: 'published'
+   * });
+   *
+   * // Get all links with dates and progress tracking
+   * const linksWithDates = await sdk.getAllLinks({
+   *   include_dates: 1,
+   *   version: 'published'
+   * }, {
+   *   perPage: 100,
+   *   onProgress: (page, totalFetched) => {
+   *     console.log(`Fetched ${totalFetched} links from ${page} pages`);
+   *   }
+   * });
+   * ```
    */
-  async getAllLinks(options?: {
-    perPage?: number;
-    maxPages?: number;
-    onProgress?: (page: number, totalFetched: number, total?: number) => void;
-  }) {
+  async getAllLinks(
+    params?: Omit<GetLinksParams, 'page' | 'per_page'>,
+    options?: {
+      perPage?: number;
+      maxPages?: number;
+      onProgress?: (page: number, totalFetched: number, total?: number) => void;
+    },
+  ) {
     return fetchAllPaginated(
-      (page, perPage) => this.getLinks({ page, per_page: perPage }),
+      (page, perPage) => this.getLinks({ ...params, page, per_page: perPage }),
       (response) => Object.values(response.links), // Convert links object to array
       options,
     );

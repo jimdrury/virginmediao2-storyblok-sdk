@@ -3,30 +3,13 @@ import type {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
-import type {
-  StoryblokStoriesResponse,
-  StoryblokStory,
-  StoryblokStoryResponse,
-} from '../types';
+import type { StoryblokStory } from '../types';
+import type { StoryblokApiResponseWithStoryRels } from './shared-types';
 
 export interface StoryblokRelationsResolverConfig {
   resolveRelations: `${string}.${string}`[];
   removeUnresolvedRelations?: boolean;
 }
-
-interface StoryblokApiResponseWithRels
-  extends Omit<StoryblokStoriesResponse, 'rels'> {
-  rels: StoryblokStory[];
-}
-
-interface StoryblokStoryResponseWithRels
-  extends Omit<StoryblokStoryResponse, 'rels'> {
-  rels: StoryblokStory[];
-}
-
-type StoryblokApiResponseWithStoryRels =
-  | StoryblokApiResponseWithRels
-  | StoryblokStoryResponseWithRels;
 
 export const storyblokRelationsResolver =
   (options: StoryblokRelationsResolverConfig) =>
@@ -35,19 +18,16 @@ export const storyblokRelationsResolver =
       return;
     }
 
-    // Request interceptor - add resolve_relations parameter
     axiosInstance.interceptors.request.use(
       (requestConfig: InternalAxiosRequestConfig) => {
         if (requestConfig.params?.resolve_relations) {
           return requestConfig;
         }
 
-        // Only apply to Storyblok CDN API endpoints
         if (!isStoryblokCdnRequest(requestConfig)) {
           return requestConfig;
         }
 
-        // Initialize params if not present
         if (!requestConfig.params) {
           requestConfig.params = {};
         }
@@ -64,10 +44,8 @@ export const storyblokRelationsResolver =
       (error) => Promise.reject(error),
     );
 
-    // Response interceptor - resolve relations in the response data
     axiosInstance.interceptors.response.use(
       (response: AxiosResponse<StoryblokApiResponseWithStoryRels>) => {
-        // Only process Storyblok CDN API responses
         if (!isStoryblokCdnResponse(response)) {
           return response;
         }
@@ -75,13 +53,11 @@ export const storyblokRelationsResolver =
         const data = response.data;
         const rels = data.rels || [];
 
-        // Create a map of UUID to story object for quick lookup
         const relsMap = new Map<string, StoryblokStory>();
         rels.forEach((rel) => {
           relsMap.set(rel.uuid, rel);
         });
 
-        // Process single story
         if ('story' in data && data.story) {
           data.story = resolveStoryRelations(
             data.story,
@@ -91,7 +67,6 @@ export const storyblokRelationsResolver =
           );
         }
 
-        // Process array of stories
         if ('stories' in data && data.stories) {
           data.stories = data.stories.map((story) =>
             resolveStoryRelations(
@@ -109,26 +84,17 @@ export const storyblokRelationsResolver =
     );
   };
 
-/**
- * Checks if the request is targeting a Storyblok CDN API endpoint
- */
 function isStoryblokCdnRequest(config: InternalAxiosRequestConfig): boolean {
   const url = config.url || '';
   return url.includes('/stories') || url.includes('/story');
 }
 
-/**
- * Checks if the response is from a Storyblok CDN API endpoint
- */
 function isStoryblokCdnResponse(response: AxiosResponse): boolean {
   const config = response.config;
   const result = isStoryblokCdnRequest(config);
   return result;
 }
 
-/**
- * Recursively resolves relations in a story object
- */
 function resolveStoryRelations(
   story: StoryblokStory,
   relsMap: Map<string, StoryblokStory>,
@@ -150,9 +116,6 @@ function resolveStoryRelations(
   return resolvedStory;
 }
 
-/**
- * Recursively resolves relations in any object
- */
 function resolveObjectRelations(
   obj: unknown,
   relsMap: Map<string, StoryblokStory>,
@@ -176,11 +139,9 @@ function resolveObjectRelations(
 
   const resolved = { ...obj } as Record<string, unknown>;
 
-  // Check if this object has a component field
   if (resolved.component && typeof resolved.component === 'string') {
     const componentName = resolved.component;
 
-    // Find matching resolve relations for this component
     const matchingRelations = resolveRelations.filter((relation) =>
       relation.startsWith(`${componentName}.`),
     );
@@ -199,7 +160,6 @@ function resolveObjectRelations(
     });
   }
 
-  // Recursively process all other fields
   Object.keys(resolved).forEach((key) => {
     if (key !== 'component') {
       resolved[key] = resolveObjectRelations(
@@ -214,16 +174,12 @@ function resolveObjectRelations(
   return resolved;
 }
 
-/**
- * Resolves relations in a field (string or array of strings)
- */
 function resolveFieldRelations(
   field: string | string[] | unknown,
   relsMap: Map<string, StoryblokStory>,
   removeUnresolvedRelations = false,
 ): StoryblokStory | string | (StoryblokStory | string)[] | undefined {
   if (typeof field === 'string') {
-    // Single UUID string
     const resolvedStory = relsMap.get(field);
     if (resolvedStory) {
       return resolvedStory;
@@ -233,7 +189,6 @@ function resolveFieldRelations(
   }
 
   if (Array.isArray(field)) {
-    // Array of UUID strings
     const resolved: (StoryblokStory | string | undefined)[] = field.map(
       (uuid) => {
         if (typeof uuid === 'string') {
@@ -249,7 +204,6 @@ function resolveFieldRelations(
       },
     );
 
-    // Filter out undefined values if removeUnresolvedRelations is true
     return removeUnresolvedRelations
       ? (resolved.filter((item) => item !== undefined) as (
           | StoryblokStory
