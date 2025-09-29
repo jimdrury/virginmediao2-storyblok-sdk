@@ -1,21 +1,14 @@
 # @virginmediao2/storyblok-sdk
 
-A modern TypeScript SDK for Storyblok CMS with Next.js compatibility, providing both content delivery and management API access.
+A modern TypeScript SDK for Storyblok CMS with Next.js compatibility, providing content delivery API access with flexible middleware support.
 
 ## Features
 
 - 🔥 **TypeScript-first** - Fully typed with generic support
-- 🚀 **Next.js optimized** - Built specifically for Next.js applications
-- 📦 **Two SDK classes** - Separate SDKs for content delivery and management
+- 📦 **Content Delivery SDK** - Optimized for fetching published content
 - 🛡️ **Axios-powered** - Built on axios with full middleware support
 - 🔧 **Customizable** - Extensive configuration options
 - 📖 **Well-documented** - Comprehensive TypeScript interfaces and JSDoc comments
-- 🧹 **Code Quality** - Biome for fast linting, formatting, and import sorting
-- 🧪 **Thoroughly Tested** - 70 tests with high coverage
-- 📁 **Clean Architecture** - Kebab-case file naming and modular structure
-- ⚡ **Modern Tooling** - Vite for fast builds, Vitest for testing
-- 📝 **Conventional Commits** - Enforced commit message standards
-- 🪝 **Git Hooks** - Automated quality checks with lefthook
 
 ## Installation
 
@@ -38,6 +31,30 @@ import { StoryblokSdk } from "@virginmediao2/storyblok-sdk";
 
 const sdk = new StoryblokSdk({
   accessToken: "your-preview-token",
+});
+
+// Recommended: Use the comprehensive middleware pattern
+import { storyblokCdnAuth, storyblokRelationsResolver } from "@virginmediao2/storyblok-sdk";
+import axiosRetry from 'axios-retry';
+import curlirize from 'axios-curlirize';
+
+const resolveRelations = [
+  'blog_post.author',
+  'page.featured_story',
+  'card.link'
+];
+
+export const storyblokSdk = new StoryblokSdk({
+  accessToken: "your-preview-token",
+  middlewares: [
+    (i) => axiosRetry(i, { retries: 3 }),
+    curlirize,
+    storyblokCdnAuth({ accessToken: "your-preview-token" }),
+    storyblokRelationsResolver({
+      resolveRelations,
+      removeUnresolvedRelations: false,
+    }),
+  ],
 });
 
 // Get all stories - returns full axios response
@@ -85,33 +102,29 @@ const allBlogPosts = await sdk.getAllStories<BlogPost>({
 console.log(`Fetched ${allBlogPosts.length} blog posts total`);
 ```
 
-### Management SDK
+### CDN Authentication Middleware
 
-For content management operations:
+For custom authentication with your own axios instances:
 
 ```typescript
-import { StoryblokManagerSdk } from "@virginmediao2/storyblok-sdk";
+import axios from "axios";
+import { storyblokCdnAuth } from "@virginmediao2/storyblok-sdk";
 
-const managerSdk = new StoryblokManagerSdk({
-  personalAccessToken: "your-management-token",
-  // or use oauthToken: 'your-oauth-token'
+// Create your own axios instance
+const customAxios = axios.create({ 
+  baseURL: "https://api.storyblok.com/v2/cdn" 
 });
 
-// Get space information - returns full axios response
-const spaceResponse = await managerSdk.getSpace();
-const space = spaceResponse.data.space;
-console.log('Rate limit remaining:', spaceResponse.headers['x-ratelimit-remaining']);
-
-// Create a new story
-const newStoryResponse = await managerSdk.createStory(spaceId, {
-  name: "My New Story",
-  slug: "my-new-story",
-  content: {
-    component: "page",
-    title: "Hello World",
-  },
+// Create the auth middleware with your config
+const authMiddleware = storyblokCdnAuth({
+  accessToken: "your-access-token"
 });
-const newStory = newStoryResponse.data.story;
+
+// Apply the middleware to your axios instance
+authMiddleware(customAxios);
+
+// Now all requests will automatically include the token
+const response = await customAxios.get("/stories");
 ```
 
 ## API Reference
@@ -231,55 +244,39 @@ const stories = await sdk.getStories({
 
 - `request<T>(config)` - Make custom API requests
 
-### StoryblokManagerSdk
+### Middleware
 
-The management SDK for content management API operations.
+The SDK provides a comprehensive middleware system for extending functionality. See the [Middleware System](#middleware-system) section for complete documentation.
 
-#### Constructor Options
+#### Quick Reference
 
 ```typescript
-interface StoryblokManagerSdkOptions {
-  personalAccessToken?: string; // Personal access token
-  oauthToken?: string; // OAuth token (alternative to personal token)
-  baseURL?: string; // Optional: Custom API base URL
-  timeout?: number; // Optional: Request timeout
-  retry?: StoryblokRetryOptions; // Optional: Retry configuration for rate limiting
-}
+import { storyblokCdnAuth, storyblokRelationsResolver } from "@virginmediao2/storyblok-sdk";
+
+// CDN Authentication (applied automatically)
+const sdk = new StoryblokSdk({
+  accessToken: "your-token" // CDN auth middleware applied automatically
+});
+
+// Relations Resolver
+const relationsMiddleware = storyblokRelationsResolver({
+  resolveRelations: ['blog_post.author', 'page.featured_story']
+});
+
+// Custom middleware
+const customMiddleware = (axiosInstance: AxiosInstance) => {
+  // Your custom logic here
+};
 ```
 
-#### Methods
-
-**Space Management:**
-
-- `getSpace()` - Get current space information
-
-**Story Management:**
-
-- `getStories<T>(spaceId, params?)` - Get stories (including drafts)
-- `getStory<T>(spaceId, storyId)` - Get a single story
-- `createStory<T>(spaceId, storyData)` - Create a new story
-- `updateStory<T>(spaceId, storyId, storyData)` - Update an existing story
-- `deleteStory(spaceId, storyId)` - Delete a story
-- `publishStory<T>(spaceId, storyId)` - Publish a story
-- `unpublishStory<T>(spaceId, storyId)` - Unpublish a story
-
-**Component Management:**
-
-- `getComponents(spaceId)` - Get all components
-- `getComponent(spaceId, componentId)` - Get a single component
-- `createComponent(spaceId, componentData)` - Create a new component
-- `updateComponent(spaceId, componentId, componentData)` - Update a component
-- `deleteComponent(spaceId, componentId)` - Delete a component
-
-**Asset Management:**
-
-- `getAssets(spaceId, params?)` - Get assets
-- `uploadAsset(spaceId, file, filename, options?)` - Upload an asset
-- `deleteAsset(spaceId, assetId)` - Delete an asset
+**Available Middlewares:**
+- ✅ **CDN Authentication** - Automatic token injection
+- ✅ **Relations Resolver** - Automatic relation resolution
+- ✅ **Custom Middlewares** - Extend with your own logic
 
 ## Rate Limiting & Exponential Backoff
 
-Both SDKs include **built-in exponential backoff** for 429 (rate limit) errors by default:
+The SDK includes **built-in exponential backoff** for 429 (rate limit) errors by default:
 
 ```typescript
 import { StoryblokSdk } from "@virginmediao2/storyblok-sdk";
@@ -307,25 +304,337 @@ const customSdk = new StoryblokSdk({
 - ✅ **Smart stopping**: Stops retrying when delay reaches maximum
 - ✅ **Focused**: Only retries on 429 errors (rate limiting)
 
-## Interceptor Utilities
+## Middleware System
 
-The SDK provides reusable interceptor utilities that you can use with your own axios instances:
+The SDK includes a powerful middleware system that allows you to extend and customize the behavior of axios instances. Middlewares are applied automatically to the SDK's internal axios instance, and you can also use them with your own custom axios instances.
+
+### Built-in Middlewares
+
+The SDK automatically applies essential middlewares to handle authentication and other core functionality:
+
+#### 1. CDN Authentication Middleware (`storyblokCdnAuth`)
+
+Automatically adds the access token to all requests as a query parameter.
+
+```typescript
+import { storyblokCdnAuth } from "@virginmediao2/storyblok-sdk";
+
+// Applied automatically in the SDK constructor
+const sdk = new StoryblokSdk({
+  accessToken: "your-access-token" // This middleware is applied automatically
+});
+
+// Or use with your own axios instance
+const customAxios = axios.create({ baseURL: "https://api.storyblok.com/v2/cdn" });
+const authMiddleware = storyblokCdnAuth({
+  accessToken: "your-access-token"
+});
+authMiddleware(customAxios);
+```
+
+**Features:**
+- ✅ **Automatic token injection** - Adds `token` parameter to all requests
+- ✅ **Non-destructive** - Won't override existing token parameters
+- ✅ **Request interceptor** - Works seamlessly with axios interceptors
+- ✅ **TypeScript support** - Fully typed configuration
+
+#### 2. Relations Resolver Middleware (`storyblokRelationsResolver`)
+
+Automatically resolves Storyblok relations in your content, converting UUID references to full story objects.
+
+```typescript
+import { storyblokRelationsResolver } from "@virginmediao2/storyblok-sdk";
+
+// Configure which relations to resolve
+const relationsMiddleware = storyblokRelationsResolver({
+  resolveRelations: [
+    'blog_post.author',           // Resolve author field in blog_post component
+    'page.featured_story',        // Resolve featured_story field in page component
+    'card.link'                   // Resolve link field in card component
+  ],
+  removeUnresolvedRelations: false // Keep unresolved relations as UUIDs (default: false)
+});
+
+// Apply to your axios instance
+relationsMiddleware(customAxios);
+
+// Now when you fetch stories, relations will be automatically resolved
+const response = await customAxios.get('/stories');
+// response.data.story.content.author will be a full story object instead of a UUID
+```
+
+**Features:**
+- ✅ **Automatic relation resolution** - Converts UUIDs to full story objects
+- ✅ **Configurable fields** - Specify which component fields to resolve
+- ✅ **Nested support** - Works with deeply nested content structures
+- ✅ **Array support** - Handles both single relations and relation arrays
+- ✅ **Unresolved handling** - Option to remove or keep unresolved relations
+- ✅ **Performance optimized** - Only processes Storyblok CDN API responses
+
+**Configuration Options:**
+
+```typescript
+interface StoryblokRelationsResolverConfig {
+  resolveRelations: `${string}.${string}`[]; // Array of "component.field" patterns
+  removeUnresolvedRelations?: boolean;      // Remove unresolved relations (default: false)
+}
+```
+
+**Example Usage:**
+
+```typescript
+// Basic setup
+const relationsMiddleware = storyblokRelationsResolver({
+  resolveRelations: ['blog_post.author', 'page.featured_story']
+});
+
+// Advanced setup with cleanup
+const advancedRelationsMiddleware = storyblokRelationsResolver({
+  resolveRelations: [
+    'blog_post.author',
+    'blog_post.featured_image',
+    'page.hero_section',
+    'card.link'
+  ],
+  removeUnresolvedRelations: true // Remove broken relations
+});
+
+// Apply to SDK
+const sdk = new StoryblokSdk({
+  accessToken: "your-token",
+  middlewares: [relationsMiddleware]
+});
+```
+
+### Custom Middleware
+
+You can create and apply custom middlewares to extend the SDK's functionality:
+
+```typescript
+import { StoryblokSdk } from "@virginmediao2/storyblok-sdk";
+
+// Custom logging middleware
+const loggingMiddleware = (axiosInstance: AxiosInstance) => {
+  axiosInstance.interceptors.request.use(
+    (config) => {
+      console.log(`Making request to: ${config.url}`);
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  axiosInstance.interceptors.response.use(
+    (response) => {
+      console.log(`Response received: ${response.status} ${response.statusText}`);
+      return response;
+    },
+    (error) => Promise.reject(error)
+  );
+};
+
+// Custom caching middleware
+const cachingMiddleware = (axiosInstance: AxiosInstance) => {
+  const cache = new Map();
+  
+  axiosInstance.interceptors.request.use(
+    (config) => {
+      const cacheKey = `${config.method}:${config.url}:${JSON.stringify(config.params)}`;
+      
+      if (cache.has(cacheKey)) {
+        console.log('Cache hit!');
+        return Promise.resolve({ data: cache.get(cacheKey), status: 200, statusText: 'OK', headers: {}, config });
+      }
+      
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  axiosInstance.interceptors.response.use(
+    (response) => {
+      const cacheKey = `${response.config.method}:${response.config.url}:${JSON.stringify(response.config.params)}`;
+      cache.set(cacheKey, response.data);
+      return response;
+    },
+    (error) => Promise.reject(error)
+  );
+};
+
+// Apply custom middlewares
+const sdk = new StoryblokSdk({
+  accessToken: "your-token",
+  middlewares: [
+    loggingMiddleware,
+    cachingMiddleware
+  ]
+});
+```
+
+### Middleware with Custom Axios Instances
+
+You can also use the built-in middlewares with your own axios instances:
 
 ```typescript
 import axios from "axios";
-import { addRetryInterceptor, addAccessTokenInterceptor } from "@virginmediao2/storyblok-sdk";
+import { storyblokCdnAuth, storyblokRelationsResolver } from "@virginmediao2/storyblok-sdk";
 
-// Create your own axios instance
-const customAxios = axios.create({ baseURL: "https://api.storyblok.com/v2" });
-
-// Add Storyblok interceptors manually
-addAccessTokenInterceptor(customAxios, "your-access-token");
-addRetryInterceptor(customAxios, {
-  baseDelay: 100,
-  maxDelay: 5000
+// Create custom axios instance
+const customAxios = axios.create({
+  baseURL: "https://api.storyblok.com/v2/cdn",
+  timeout: 15000
 });
 
-// Now your custom instance has the same retry behavior as the SDK
+// Apply authentication middleware
+const authMiddleware = storyblokCdnAuth({
+  accessToken: "your-access-token"
+});
+authMiddleware(customAxios);
+
+// Apply relations resolver middleware
+const relationsMiddleware = storyblokRelationsResolver({
+  resolveRelations: ['blog_post.author', 'page.featured_story']
+});
+relationsMiddleware(customAxios);
+
+// Now your custom instance has the same functionality as the SDK
+const response = await customAxios.get('/stories');
+```
+
+### Middleware Execution Order
+
+Middlewares are applied in the order they are provided:
+
+```typescript
+const sdk = new StoryblokSdk({
+  accessToken: "your-token",
+  middlewares: [
+    loggingMiddleware,        // 1. Applied first
+    relationsMiddleware,      // 2. Applied second
+    cachingMiddleware         // 3. Applied last
+  ]
+});
+```
+
+**Execution Flow:**
+1. **Built-in middlewares** (CDN auth) are applied first
+2. **Custom middlewares** are applied in the order specified
+3. **Request interceptors** run in the order they were added
+4. **Response interceptors** run in reverse order (last added, first executed)
+
+### Advanced Middleware Patterns
+
+#### Error Handling Middleware
+
+```typescript
+const errorHandlingMiddleware = (axiosInstance: AxiosInstance) => {
+  axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response?.status === 404) {
+        console.warn('Story not found:', error.config.url);
+        return Promise.resolve({ 
+          data: { story: null }, 
+          status: 404, 
+          statusText: 'Not Found',
+          headers: {},
+          config: error.config 
+        });
+      }
+      
+      if (error.response?.status === 429) {
+        console.warn('Rate limited, retrying...');
+        // Let the built-in retry middleware handle this
+      }
+      
+      return Promise.reject(error);
+    }
+  );
+};
+```
+
+#### Request Transformation Middleware
+
+```typescript
+const requestTransformMiddleware = (axiosInstance: AxiosInstance) => {
+  axiosInstance.interceptors.request.use(
+    (config) => {
+      // Add custom headers
+      config.headers = {
+        ...config.headers,
+        'X-Custom-Header': 'my-value',
+        'X-Request-ID': Math.random().toString(36).substr(2, 9)
+      };
+      
+      // Transform request data
+      if (config.data && typeof config.data === 'object') {
+        config.data = {
+          ...config.data,
+          timestamp: new Date().toISOString()
+        };
+      }
+      
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+};
+```
+
+#### Response Transformation Middleware
+
+```typescript
+const responseTransformMiddleware = (axiosInstance: AxiosInstance) => {
+  axiosInstance.interceptors.response.use(
+    (response) => {
+      // Add custom metadata to responses
+      response.data = {
+        ...response.data,
+        _metadata: {
+          fetchedAt: new Date().toISOString(),
+          requestId: response.config.headers['X-Request-ID']
+        }
+      };
+      
+      return response;
+    },
+    (error) => Promise.reject(error)
+  );
+};
+```
+
+### Best Practices
+
+1. **Order matters**: Apply middlewares in the correct order for your use case
+2. **Error handling**: Always handle errors in your middleware
+3. **Performance**: Consider the performance impact of your middleware
+4. **Testing**: Test your middleware in isolation
+5. **Documentation**: Document your custom middleware behavior
+
+```typescript
+// Good: Well-documented middleware
+const myMiddleware = (axiosInstance: AxiosInstance) => {
+  /**
+   * Custom middleware that adds request timing
+   * - Adds start time to request config
+   * - Logs request duration on response
+   */
+  axiosInstance.interceptors.request.use(
+    (config) => {
+      config.metadata = { startTime: Date.now() };
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  axiosInstance.interceptors.response.use(
+    (response) => {
+      const duration = Date.now() - response.config.metadata.startTime;
+      console.log(`Request to ${response.config.url} took ${duration}ms`);
+      return response;
+    },
+    (error) => Promise.reject(error)
+  );
+};
 ```
 
 ## Utility Functions
@@ -349,11 +658,11 @@ const allItems = await fetchAllPaginated(
 
 ## Custom Axios Middleware
 
-You can still add custom interceptors for other use cases:
+You can add custom interceptors for other use cases:
 
 ```typescript
 // Add custom request interceptor
-sdk.interceptors.request.use(
+sdk.axiosInstance.interceptors.request.use(
   (config) => {
     console.log("Making request:", config);
     return config;
@@ -362,7 +671,7 @@ sdk.interceptors.request.use(
 );
 
 // Add custom response interceptor (runs after built-in retry)
-sdk.interceptors.response.use(
+sdk.axiosInstance.interceptors.response.use(
   (response) => {
     console.log("Response received:", response.status);
     return response;

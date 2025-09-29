@@ -10,7 +10,9 @@ const mockedAxios = vi.mocked(axios, true);
 vi.mock('./interceptors');
 
 // Mock the utils
-vi.mock('./utils');
+vi.mock('./utils', () => ({
+  fetchAllPaginated: vi.fn().mockResolvedValue([]),
+}));
 
 describe('StoryblokSdk', () => {
   let sdk: StoryblokSdk;
@@ -65,7 +67,7 @@ describe('StoryblokSdk', () => {
     it('should create SDK instance with required options', () => {
       expect(sdk).toBeInstanceOf(StoryblokSdk);
       expect(mockedAxios.create).toHaveBeenCalledWith({
-        baseURL: 'https://api.storyblok.com/v2',
+        baseURL: 'https://api.storyblok.com/v2/cdn/',
         timeout: 10000,
         headers: {
           Accept: 'application/json',
@@ -98,7 +100,7 @@ describe('StoryblokSdk', () => {
       });
 
       expect(mockedAxios.create).toHaveBeenLastCalledWith({
-        baseURL: 'https://api.storyblok.com/v2',
+        baseURL: 'https://api.storyblok.com/v2/cdn/',
         timeout: 5000,
         headers: {
           Accept: 'application/json',
@@ -110,7 +112,9 @@ describe('StoryblokSdk', () => {
 
   describe('interceptors', () => {
     it('should expose axios interceptors', () => {
-      expect(sdk.interceptors).toBe(mockAxiosInstance.interceptors);
+      expect(sdk.axiosInstance.interceptors).toBe(
+        mockAxiosInstance.interceptors,
+      );
     });
   });
 
@@ -402,6 +406,165 @@ describe('StoryblokSdk', () => {
 
     it('should have getAllDatasourceEntries method', () => {
       expect(typeof sdk.getAllDatasourceEntries).toBe('function');
+    });
+
+    it('should handle getAllStories call without throwing', async () => {
+      // Since fetchAllPaginated is mocked, this should resolve
+      await expect(sdk.getAllStories()).resolves.toBeDefined();
+    });
+
+    it('should handle getAllStoriesByTag call without throwing', async () => {
+      await expect(sdk.getAllStoriesByTag('featured')).resolves.toBeDefined();
+    });
+
+    it('should handle getAllStoriesByPath call without throwing', async () => {
+      await expect(sdk.getAllStoriesByPath('blog/')).resolves.toBeDefined();
+    });
+
+    it('should handle searchAllStories call without throwing', async () => {
+      await expect(sdk.searchAllStories('typescript')).resolves.toBeDefined();
+    });
+
+    it('should handle getAllTags call without throwing', async () => {
+      await expect(sdk.getAllTags()).resolves.toBeDefined();
+    });
+
+    it('should handle getAllLinks call without throwing', async () => {
+      await expect(sdk.getAllLinks()).resolves.toBeDefined();
+    });
+
+    it('should handle getAllDatasourceEntries call without throwing', async () => {
+      await expect(
+        sdk.getAllDatasourceEntries('countries'),
+      ).resolves.toBeDefined();
+    });
+  });
+
+  describe('error handling', () => {
+    it('should handle axios errors in getStories', async () => {
+      const error = new Error('Network error');
+      mockAxiosInstance.get.mockRejectedValue(error);
+
+      await expect(sdk.getStories()).rejects.toThrow('Network error');
+    });
+
+    it('should handle axios errors in getStory', async () => {
+      const error = new Error('Story not found');
+      mockAxiosInstance.get.mockRejectedValue(error);
+
+      await expect(sdk.getStory('non-existent')).rejects.toThrow(
+        'Story not found',
+      );
+    });
+
+    it('should handle axios errors in getTags', async () => {
+      const error = new Error('API error');
+      mockAxiosInstance.get.mockRejectedValue(error);
+
+      await expect(sdk.getTags()).rejects.toThrow('API error');
+    });
+
+    it('should handle axios errors in getLinks', async () => {
+      const error = new Error('API error');
+      mockAxiosInstance.get.mockRejectedValue(error);
+
+      await expect(sdk.getLinks()).rejects.toThrow('API error');
+    });
+
+    it('should handle axios errors in getDatasourceEntries', async () => {
+      const error = new Error('API error');
+      mockAxiosInstance.get.mockRejectedValue(error);
+
+      await expect(sdk.getDatasourceEntries('countries')).rejects.toThrow(
+        'API error',
+      );
+    });
+  });
+
+  describe('middleware functionality', () => {
+    it('should apply middlewares to axios instance', () => {
+      const middleware = vi.fn();
+      new StoryblokSdk({
+        accessToken: mockAccessToken,
+        middlewares: [middleware],
+      });
+
+      expect(middleware).toHaveBeenCalledWith(expect.any(Object));
+    });
+
+    it('should apply multiple middlewares in order', () => {
+      const middleware1 = vi.fn();
+      const middleware2 = vi.fn();
+      new StoryblokSdk({
+        accessToken: mockAccessToken,
+        middlewares: [middleware1, middleware2],
+      });
+
+      expect(middleware1).toHaveBeenCalledWith(expect.any(Object));
+      expect(middleware2).toHaveBeenCalledWith(expect.any(Object));
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should handle empty responses', async () => {
+      const mockResponse = { data: { stories: [] } };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      const result = await sdk.getStories();
+      expect(result.data.stories).toEqual([]);
+    });
+
+    it('should handle null/undefined parameters gracefully', async () => {
+      const mockResponse = { data: { stories: [] } };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      // These should not throw
+      await expect(sdk.getStories(undefined)).resolves.toBeDefined();
+      await expect(sdk.getStory('test', undefined)).resolves.toBeDefined();
+      await expect(sdk.getTags(undefined)).resolves.toBeDefined();
+      await expect(sdk.getLinks(undefined)).resolves.toBeDefined();
+    });
+
+    it('should handle special characters in slugs', async () => {
+      const slug = 'test-story-with-special-chars-123';
+      const mockResponse = { data: { story: {} } };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      await sdk.getStory(slug);
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/stories/${slug}`, {
+        params: undefined,
+      });
+    });
+
+    it('should handle empty search terms', async () => {
+      const mockResponse = { data: { stories: [] } };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      await sdk.searchStories('');
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/stories', {
+        params: {
+          search_term: '',
+        },
+      });
+    });
+
+    it('should handle empty tag names', async () => {
+      const mockResponse = { data: { stories: [] } };
+      mockAxiosInstance.get.mockResolvedValue(mockResponse);
+
+      await sdk.getStoriesByTag('');
+
+      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/stories', {
+        params: {
+          filter_query: {
+            tag_list: {
+              in: '',
+            },
+          },
+        },
+      });
     });
   });
 });
