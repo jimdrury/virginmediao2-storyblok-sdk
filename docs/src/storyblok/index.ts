@@ -13,6 +13,7 @@ export const storyblokSdk = new StoryblokSdk({
     storyblokCdnAuth({ accessToken: STORYBLOK.ACCESS_TOKEN }),
     storyblokBasePath({
       basePath: 'en/oss-storyblok-sdk/',
+      rewriteLinks: true,
     }),
     storyblokLinksResolver({ resolveLinks: 'story' }),
     storyblokRelationsResolver({ resolveRelations: [] }),

@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { storyblokBasePath } from './storyblok-base-path';
 
 describe('storyblokBasePath', () => {
