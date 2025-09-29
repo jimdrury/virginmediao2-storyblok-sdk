@@ -2,6 +2,7 @@ import {
   StoryblokSdk,
   storyblokBasePath,
   storyblokCdnAuth,
+  storyblokCdnDomain,
   storyblokLinksResolver,
   storyblokRelationsResolver,
 } from '@virginmediao2/storyblok-sdk';
@@ -10,8 +11,14 @@ import { STORYBLOK } from '@/environment/storyblok';
 export const storyblokSdk = new StoryblokSdk({
   middlewares: [
     storyblokCdnAuth({ accessToken: STORYBLOK.ACCESS_TOKEN }),
-    storyblokLinksResolver({ resolveLinks: 'link' }),
+    storyblokBasePath({
+      basePath: 'en/oss-storyblok-sdk/',
+    }),
+    storyblokLinksResolver({ resolveLinks: 'story' }),
     storyblokRelationsResolver({ resolveRelations: [] }),
-    storyblokBasePath({ basePath: 'en/oss-storyblok-sdk/' }),
+    storyblokCdnDomain({
+      assetDomain: 'https://storyblok.cdn.vmo2digital.co.uk',
+      allowedSpaceIds: ['329767'],
+    }),
   ],
 });

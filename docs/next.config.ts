@@ -1,4 +1,3 @@
-import path from 'node:path';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
@@ -12,9 +11,6 @@ const nextConfig: NextConfig = {
     staticGenerationRetryCount: 3,
     useCache: true,
     cacheComponents: true,
-  },
-  turbopack: {
-    root: path.resolve(__dirname, '../../'),
   },
 };
 

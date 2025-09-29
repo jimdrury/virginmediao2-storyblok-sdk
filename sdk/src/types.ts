@@ -69,6 +69,7 @@ export interface StoryblokStory<T = Record<string, unknown>> {
     name: string | null;
     lang: string;
   }>;
+  default_full_slug?: string;
 }
 
 export interface StoryblokStoriesResponse<T = Record<string, unknown>> {
