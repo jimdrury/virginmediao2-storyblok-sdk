@@ -1,0 +1,26 @@
+.click-to-expand {
+  position: relative;
+}
+
+.click-to-expand__control {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(0 0 0 / 0%), rgba(0 0 0 / 50%) 100%);
+  backdrop-filter: blur(1px);
+  transition: all 200ms ease-out;
+}
+
+.click-to-expand--expanded .click-to-expand__control {
+  visibility: hidden;
+  opacity: 0;
+  backdrop-filter: blur(0);
+}
+
+.click-to-expand__content {
+  display: block;
+  overflow: hidden;
+  transition: height 0.2s ease-out;
+}

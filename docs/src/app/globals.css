@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+/* biome-ignore lint/suspicious/noUnknownAtRules: tailwind fn */
+@plugin "daisyui";
+
+.tabs-border .tab {
+  padding-inline: var(--tab-p);
+}
+
+.mockup-code pre:before {
+  display: none;
+}

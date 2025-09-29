@@ -34,7 +34,7 @@ const sdk = new StoryblokSdk({
 });
 
 // Recommended: Use the comprehensive middleware pattern
-import { storyblokCdnAuth, storyblokRelationsResolver, storyblokBasePath } from "@virginmediao2/storyblok-sdk";
+import { storyblokCdnConfig, storyblokRelationsResolver, storyblokBasePath } from "@virginmediao2/storyblok-sdk";
 import axiosRetry from 'axios-retry';
 import curlirize from 'axios-curlirize';
 
@@ -49,7 +49,10 @@ export const storyblokSdk = new StoryblokSdk({
   middlewares: [
     (i) => axiosRetry(i, { retries: 3 }),
     curlirize,
-    storyblokCdnAuth({ accessToken: "your-preview-token" }),
+    storyblokCdnConfig({ 
+      accessToken: "your-preview-token",
+      assetDomain: "https://assets.example.com" // Optional: custom asset domain
+    }),
     storyblokRelationsResolver({
       resolveRelations,
       removeUnresolvedRelations: false,
@@ -251,16 +254,31 @@ The SDK provides a comprehensive middleware system for extending functionality. 
 #### Quick Reference
 
 ```typescript
-import { storyblokCdnAuth, storyblokRelationsResolver, storyblokBasePath } from "@virginmediao2/storyblok-sdk";
+import { 
+  storyblokCdnAuth, 
+  storyblokCdnDomain,
+  storyblokRelationsResolver, 
+  storyblokBasePath 
+} from "@virginmediao2/storyblok-sdk";
 
 // CDN Authentication (applied automatically)
 const sdk = new StoryblokSdk({
   accessToken: "your-token" // CDN auth middleware applied automatically
 });
 
+// CDN Domain Replacement
+const cdnDomainMiddleware = storyblokCdnDomain({
+  assetDomain: "https://assets.example.com"
+});
+
 // Relations Resolver
 const relationsMiddleware = storyblokRelationsResolver({
   resolveRelations: ['blog_post.author', 'page.featured_story']
+});
+
+// Base Path Filtering
+const basePathMiddleware = storyblokBasePath({
+  basePath: "blog/"
 });
 
 // Custom middleware
@@ -271,7 +289,9 @@ const customMiddleware = (axiosInstance: AxiosInstance) => {
 
 **Available Middlewares:**
 - ✅ **CDN Authentication** - Automatic token injection
+- ✅ **CDN Domain** - Custom asset domain replacement
 - ✅ **Relations Resolver** - Automatic relation resolution
+- ✅ **Base Path** - Automatic path filtering
 - ✅ **Custom Middlewares** - Extend with your own logic
 
 ## Rate Limiting & Exponential Backoff
@@ -452,6 +472,147 @@ const sdk = new StoryblokSdk({
 
 const blogStories = await sdk.getStories(); // Automatically filtered to blog/
 const blogLinks = await sdk.getLinks();     // Automatically filtered to blog/
+```
+
+#### 4. CDN Domain Middleware (`storyblokCdnDomain`)
+
+Automatically replaces `a.storyblok.com` asset URLs with a custom domain in response data, with optional space ID filtering for multi-tenant applications.
+
+```typescript
+import { storyblokCdnDomain } from "@virginmediao2/storyblok-sdk";
+
+// Basic usage - replace all asset URLs with custom domain
+const cdnDomainMiddleware = storyblokCdnDomain({
+  assetDomain: "https://assets.example.com"
+});
+
+// Advanced usage - with space ID filtering for multi-tenant applications
+const multiTenantCdnMiddleware = storyblokCdnDomain({
+  assetDomain: "https://cdn.myapp.com",
+  allowedSpaceIds: ["329767", "123456"] // Only process URLs from these spaces
+});
+
+// Apply to your axios instance
+cdnDomainMiddleware(customAxios);
+
+// Now all Storyblok asset URLs will be automatically replaced
+const response = await customAxios.get('/stories');
+// https://a.storyblok.com/f/329767/image.jpg -> https://assets.example.com/f/329767/image.jpg
+```
+
+**Features:**
+- ✅ **Automatic URL replacement** - Replaces `a.storyblok.com` with your custom domain
+- ✅ **Deep processing** - Recursively processes all response data including nested objects and arrays
+- ✅ **Asset object handling** - Special handling for Storyblok asset objects
+- ✅ **Space ID filtering** - Optional filtering by space ID for multi-tenant applications
+- ✅ **Blocked URL handling** - Replaces blocked assets with empty asset structure
+- ✅ **Performance optimized** - Only processes Storyblok CDN API responses
+
+**Configuration Options:**
+
+```typescript
+interface StoryblokCdnDomainConfig {
+  assetDomain: `https://${string}`;     // Custom domain for assets (must include protocol)
+  allowedSpaceIds?: `${number}`[];      // Optional: Array of allowed space IDs
+}
+```
+
+**Use Cases:**
+
+1. **Custom CDN Domain** - Use your own CDN for better branding and performance
+2. **Multi-tenant Applications** - Filter assets by space ID to prevent cross-tenant access
+3. **Asset Security** - Control which assets are accessible through domain filtering
+4. **Performance Optimization** - Use a CDN closer to your users
+
+**Example Scenarios:**
+
+```typescript
+// Scenario 1: Simple CDN replacement for better performance
+const performanceCdn = storyblokCdnDomain({
+  assetDomain: "https://fast-cdn.myapp.com"
+});
+
+// Scenario 2: Multi-tenant SaaS application
+const multiTenantCdn = storyblokCdnDomain({
+  assetDomain: "https://assets.myapp.com",
+  allowedSpaceIds: ["329767"] // Only allow assets from this tenant's space
+});
+
+// Scenario 3: Development environment with local assets
+const devCdn = storyblokCdnDomain({
+  assetDomain: "https://localhost:3000/assets"
+});
+
+// Apply to SDK
+const sdk = new StoryblokSdk({
+  accessToken: "your-token",
+  middlewares: [performanceCdn]
+});
+
+// All asset URLs in responses will now use your custom domain
+const story = await sdk.getStory("blog/my-post");
+console.log(story.data.story.content.featured_image.filename);
+// Output: https://fast-cdn.myapp.com/f/329767/my-image.jpg
+```
+
+**Asset Object Processing:**
+
+The middleware intelligently handles Storyblok asset objects:
+
+```typescript
+// Original Storyblok asset object
+{
+  "fieldtype": "asset",
+  "filename": "https://a.storyblok.com/f/329767/image.jpg",
+  "alt": "My image",
+  "name": "image.jpg",
+  "title": "Beautiful image"
+}
+
+// After processing with storyblokCdnDomain
+{
+  "fieldtype": "asset", 
+  "filename": "https://assets.example.com/f/329767/image.jpg", // URL replaced
+  "alt": "My image",
+  "name": "image.jpg", 
+  "title": "Beautiful image"
+}
+
+// If space ID is blocked (when using allowedSpaceIds)
+{
+  "id": null,
+  "alt": null,
+  "name": "",
+  "focus": null,
+  "title": null,
+  "filename": null,
+  "copyright": null,
+  "fieldtype": "asset",
+  "meta_data": {},
+  "is_external_url": false,
+  "source": null
+}
+```
+
+**Security Considerations:**
+
+When using `allowedSpaceIds`, the middleware provides security benefits:
+
+- **Tenant Isolation**: Prevents access to assets from other tenants/spaces
+- **Content Security**: Blocks unauthorized asset URLs by replacing them with empty objects
+- **Data Leakage Prevention**: Ensures only approved space assets are displayed
+
+```typescript
+// Multi-tenant security setup
+const secureMultiTenantSdk = new StoryblokSdk({
+  accessToken: "tenant-specific-token",
+  middlewares: [
+    storyblokCdnDomain({
+      assetDomain: "https://secure-cdn.myapp.com",
+      allowedSpaceIds: [getCurrentTenantSpaceId()] // Dynamic space ID based on current tenant
+    })
+  ]
+});
 ```
 
 ### Custom Middleware

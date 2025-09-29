@@ -1,0 +1,43 @@
+.snippet {
+  display: grid;
+  grid-template-areas: "icon title action" "code code code";
+  grid-template-columns: min-content 1fr auto;
+  padding: 2px 2px 3px;
+  color: var(--color-surface-fg);
+  background-color: var(--color-surface-bg-dim);
+  border-radius: var(--border-radius-m);
+}
+
+.snippet__title,
+.snippet__action,
+.snippet__icon {
+  display: flex;
+  align-items: center;
+}
+
+.snippet__icon {
+  grid-area: icon;
+  padding-left: 12px;
+}
+
+.snippet__title {
+  grid-area: title;
+  padding-left: 8px;
+}
+
+.snippet__action {
+  grid-area: action;
+  padding: 0 0 2px;
+}
+
+.snippet__code {
+  grid-area: code;
+}
+
+.snippet__title-text {
+  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+  font-size: var(--font-size-200);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-200);
+  color: var(--color-surface-fg);
+}
