@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  basePath: '/virginmediao2-storyblok-sdk',
   experimental: {
     staticGenerationRetryCount: 3,
   },
