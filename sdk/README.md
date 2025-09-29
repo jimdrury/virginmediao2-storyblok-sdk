@@ -34,7 +34,7 @@ const sdk = new StoryblokSdk({
 });
 
 // Recommended: Use the comprehensive middleware pattern
-import { storyblokCdnAuth, storyblokRelationsResolver } from "@virginmediao2/storyblok-sdk";
+import { storyblokCdnAuth, storyblokRelationsResolver, storyblokBasePath } from "@virginmediao2/storyblok-sdk";
 import axiosRetry from 'axios-retry';
 import curlirize from 'axios-curlirize';
 
@@ -251,7 +251,7 @@ The SDK provides a comprehensive middleware system for extending functionality. 
 #### Quick Reference
 
 ```typescript
-import { storyblokCdnAuth, storyblokRelationsResolver } from "@virginmediao2/storyblok-sdk";
+import { storyblokCdnAuth, storyblokRelationsResolver, storyblokBasePath } from "@virginmediao2/storyblok-sdk";
 
 // CDN Authentication (applied automatically)
 const sdk = new StoryblokSdk({
@@ -406,6 +406,54 @@ const sdk = new StoryblokSdk({
 });
 ```
 
+#### 3. Base Path Middleware (`storyblokBasePath`)
+
+Automatically appends a `starts_with` query parameter to Stories and GetLinks API calls with a preconfigured base path.
+
+```typescript
+import { storyblokBasePath } from "@virginmediao2/storyblok-sdk";
+
+// Configure the base path for automatic starts_with filtering
+const basePathMiddleware = storyblokBasePath({
+  basePath: "blog/"  // Will automatically add starts_with=blog/ to Stories and Links API calls
+});
+
+// Apply to your axios instance
+basePathMiddleware(customAxios);
+
+// Now all Stories and Links API calls will automatically include starts_with=blog/
+const stories = await customAxios.get('/stories'); // Automatically becomes /stories?starts_with=blog/
+const links = await customAxios.get('/links');     // Automatically becomes /links?starts_with=blog/
+```
+
+**Features:**
+- ✅ **Automatic path filtering** - Adds `starts_with` parameter to Stories and GetLinks APIs
+- ✅ **Non-destructive** - Won't override existing `starts_with` parameters
+- ✅ **Selective application** - Only affects Stories and GetLinks endpoints
+- ✅ **TypeScript support** - Fully typed configuration
+
+**Use Cases:**
+- Filter all content to a specific section (e.g., blog posts only)
+- Organize content by path structure
+- Simplify API calls by removing repetitive `starts_with` parameters
+
+```typescript
+// Without middleware - repetitive starts_with parameters
+const blogStories = await sdk.getStories({ starts_with: 'blog/' });
+const blogLinks = await sdk.getLinks({ starts_with: 'blog/' });
+
+// With middleware - automatic starts_with filtering
+const sdk = new StoryblokSdk({
+  accessToken: "your-token",
+  middlewares: [
+    storyblokBasePath({ basePath: 'blog/' })
+  ]
+});
+
+const blogStories = await sdk.getStories(); // Automatically filtered to blog/
+const blogLinks = await sdk.getLinks();     // Automatically filtered to blog/
+```
+
 ### Custom Middleware
 
 You can create and apply custom middlewares to extend the SDK's functionality:
@@ -476,7 +524,7 @@ You can also use the built-in middlewares with your own axios instances:
 
 ```typescript
 import axios from "axios";
-import { storyblokCdnAuth, storyblokRelationsResolver } from "@virginmediao2/storyblok-sdk";
+import { storyblokCdnAuth, storyblokRelationsResolver, storyblokBasePath } from "@virginmediao2/storyblok-sdk";
 
 // Create custom axios instance
 const customAxios = axios.create({
