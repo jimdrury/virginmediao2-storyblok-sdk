@@ -2,7 +2,7 @@ import path from 'node:path';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  output: 'export',
+  // output: 'export',
   trailingSlash: true,
   images: {
     unoptimized: true,
@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
   basePath: '/virginmediao2-storyblok-sdk',
   experimental: {
     staticGenerationRetryCount: 3,
+    useCache: true,
+    cacheComponents: true,
   },
   turbopack: {
     root: path.resolve(__dirname, '../../'),
