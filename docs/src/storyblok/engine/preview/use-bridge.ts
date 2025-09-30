@@ -1,7 +1,7 @@
 'use client';
 
 import StoryblokBridge from '@storyblok/preview-bridge';
-import type { StoryblokStory } from '@virginmediao2/storyblok-sdk';
+import type { StoryblokStory } from '@virginmediao2/storyblok-sdk/src';
 import { useLayoutEffect, useState } from 'react';
 
 export const useBridge = () => {

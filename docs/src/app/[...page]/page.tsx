@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import type { FC } from 'react';
+import { PreviewStory } from '@/storyblok';
 import { getAllLinks } from '@/storyblok/utils/get-all-links';
 import { getStory } from '@/storyblok/utils/get-story';
-import { PreviewStory } from '@/storyblok-preview';
 
 export const generateStaticParams = async () => {
   const links = await getAllLinks();

@@ -1,13 +1,13 @@
 import type {
   StoryblokComponent,
   StoryblokStory,
-} from '@virginmediao2/storyblok-sdk';
+} from '@virginmediao2/storyblok-sdk/src';
 import type { FC } from 'react';
 import type {
   BC,
   RenderComponentProps,
   StoryblokEngineProps,
-} from './engine.interface';
+} from '../engine.interface';
 
 export interface RenderStoryProps {
   story: StoryblokStory<StoryblokComponent>;

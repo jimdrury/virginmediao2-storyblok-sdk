@@ -1,8 +1,8 @@
-import type { StoryblokComponent } from '@virginmediao2/storyblok-sdk';
-import type { BLOK } from '@/storyblok/bloks';
+import type { StoryblokComponent } from '@virginmediao2/storyblok-sdk/src';
+import type { OSS_BLOK } from '@/storyblok/bloks';
 import type { BC } from '@/storyblok/engine';
 
-export type OssPageBlok = StoryblokComponent<BLOK.OSS_PAGE> & {
+export type OssPageBlok = StoryblokComponent<OSS_BLOK.PAGE> & {
   content: Array<StoryblokComponent>;
 };
 

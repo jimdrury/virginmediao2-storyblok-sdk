@@ -1,4 +1,4 @@
-import type { StoryblokComponent } from '@virginmediao2/storyblok-sdk';
+import type { StoryblokComponent } from '@virginmediao2/storyblok-sdk/src';
 
 type StoryblokEditableProps = Partial<StoryblokComponent>;
 
