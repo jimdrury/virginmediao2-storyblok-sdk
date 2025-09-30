@@ -18,7 +18,7 @@ interface PageProps {
 
 export const generateMetadata = async (props: PageProps): Promise<Metadata> => {
   const params = await props.params;
-  const slug = params.page?.join('/') ?? '/';
+  const slug = params.page.join('/');
   const story = await getStory(slug);
 
   if (!story) {
@@ -33,7 +33,7 @@ export const generateMetadata = async (props: PageProps): Promise<Metadata> => {
 const Page: FC<PageProps> = async (props) => {
   const params = await props.params;
   const draft = await draftMode();
-  const slug = params.page?.join('/') ?? '/';
+  const slug = params.page.join('/');
 
   if (draft.isEnabled) {
     const story = await getStory(slug, { version: 'draft' });
