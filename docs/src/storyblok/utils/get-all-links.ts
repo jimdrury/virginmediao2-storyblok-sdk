@@ -1,4 +1,4 @@
-import type { GetLinksParams } from '@virginmediao2/storyblok-sdk';
+import type { GetLinksParams } from '@virginmediao2/storyblok-sdk/src';
 import { cacheLife } from 'next/dist/server/use-cache/cache-life';
 import { storyblokSdk } from '..';
 

@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   experimental: {
     staticGenerationRetryCount: 3,
     useCache: true,
-    cacheComponents: true,
+    // cacheComponents: true,
   },
 };
 

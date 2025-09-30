@@ -9,7 +9,7 @@ export interface BaseStoryblokOptions {
    * Base URL for Storyblok API
    * @default 'https://api.storyblok.com/v2'
    */
-  baseURL?: string;
+  baseURL?: `https://${string}`;
   /**
    * Request timeout in milliseconds
    * @default 10000
@@ -37,8 +37,15 @@ export interface StoryblokManagerSdkOptions extends BaseStoryblokOptions {
   oauthToken?: string;
 }
 
+export interface BlokType<T = string> {
+  _uid: string;
+  _editable?: string;
+  component: T;
+  [key: string]: unknown;
+}
+
 // Storyblok API response interfaces
-export interface StoryblokStory<T = Record<string, unknown>> {
+export interface StoryType<T extends BlokType = BlokType> {
   id: number;
   uuid: string;
   name: string;
@@ -72,67 +79,18 @@ export interface StoryblokStory<T = Record<string, unknown>> {
   default_full_slug?: string;
 }
 
-export interface StoryblokStoriesResponse<T = Record<string, unknown>> {
-  stories: StoryblokStory<T>[];
+export interface StoryblokStoriesResponse<T extends BlokType> {
+  stories: StoryType<T>[];
   cv: number;
   rels: string[];
   links: string[];
 }
 
-export interface StoryblokStoryResponse<T = Record<string, unknown>> {
-  story: StoryblokStory<T>;
+export interface StoryblokStoryResponse<T extends BlokType> {
+  story: StoryType<T>;
   cv: number;
   rels: string[];
   links: string[];
-}
-
-export interface StoryblokComponent {
-  id: number;
-  name: string;
-  display_name: string | null;
-  created_at: string;
-  updated_at: string;
-  schema: Record<string, unknown>;
-  image: string | null;
-  preview_field: string | null;
-  is_root: boolean;
-  preview_tmpl: string | null;
-  is_nestable: boolean;
-  all_presets: unknown[];
-  preset_id: number | null;
-  real_name: string;
-  component_group_uuid: string | null;
-  color: string | null;
-  icon: string | null;
-  internal_tags_list: string[];
-  internal_tag_ids: number[];
-  content_type_asset_preview: string | null;
-}
-
-export interface StoryblokSpace {
-  id: number;
-  name: string;
-  domain: string;
-  uniq_domain: string | null;
-  created_at: string;
-  plan: string;
-  plan_level: number;
-  limits: Record<string, unknown>;
-  story_published_hook: string | null;
-  environments: Array<{
-    id: number;
-    name: string;
-    location: string;
-  }>;
-  lang_codes: string[];
-  default_lang_name: string;
-  plan_name: string;
-  trial: boolean;
-  suspended: boolean;
-  billing_address: Record<string, unknown> | null;
-  owner_id: number;
-  duplicatable: boolean;
-  options: Record<string, unknown>;
 }
 
 // Filter query types for Storyblok API
@@ -391,37 +349,6 @@ export interface StoryblokAsset {
 
 export interface StoryblokAssetsResponse {
   assets: StoryblokAsset[];
-}
-
-export interface StoryblokStoriesManagementResponse<
-  T = Record<string, unknown>,
-> {
-  stories: StoryblokStory<T>[];
-}
-
-export interface StoryblokStoryManagementResponse<T = Record<string, unknown>> {
-  story: StoryblokStory<T>;
-}
-
-export interface StoryblokComponentResponse {
-  component: StoryblokComponent;
-}
-
-export interface StoryblokComponentsResponse {
-  components: StoryblokComponent[];
-}
-
-export interface StoryblokSpaceResponse {
-  space: StoryblokSpace;
-}
-
-// Simplified story type for getAllStories
-export interface StoryblokSimplifiedStory<T = Record<string, unknown>> {
-  id: number;
-  name: string;
-  slug: string;
-  full_slug: string;
-  content: T;
 }
 
 // Rate limiting and retry options

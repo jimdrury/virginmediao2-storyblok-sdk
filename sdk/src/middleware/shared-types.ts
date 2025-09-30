@@ -1,33 +1,35 @@
 import type {
+  BlokType,
   StoryblokStoriesResponse,
-  StoryblokStory,
   StoryblokStoryResponse,
+  StoryType,
 } from '../types';
 
-export interface StoryblokStoriesResponseWithRels
-  extends Omit<StoryblokStoriesResponse, 'rels'> {
-  rels: StoryblokStory[];
+export interface StoryblokStoriesResponseWithRels<T extends BlokType = BlokType>
+  extends Omit<StoryblokStoriesResponse<T>, 'rels'> {
+  rels: StoryType<T>[];
 }
 
-export interface StoryblokStoryResponseWithRels
-  extends Omit<StoryblokStoryResponse, 'rels'> {
-  rels: StoryblokStory[];
+export interface StoryblokStoryResponseWithRels<T extends BlokType = BlokType>
+  extends Omit<StoryblokStoryResponse<T>, 'rels'> {
+  rels: StoryType<T>[];
 }
 
-export interface StoryblokStoriesResponseWithLinks
-  extends Omit<StoryblokStoriesResponse, 'links'> {
-  links: StoryblokStory[];
+export interface StoryblokStoriesResponseWithLinks<
+  T extends BlokType = BlokType,
+> extends Omit<StoryblokStoriesResponse<T>, 'links'> {
+  links: StoryType<T>[];
 }
 
-export interface StoryblokStoryResponseWithLinks
-  extends Omit<StoryblokStoryResponse, 'links'> {
-  links: StoryblokStory[];
+export interface StoryblokStoryResponseWithLinks<T extends BlokType = BlokType>
+  extends Omit<StoryblokStoryResponse<T>, 'links'> {
+  links: StoryType<T>[];
 }
 
-export type StoryblokApiResponseWithStoryRels =
-  | StoryblokStoriesResponseWithRels
-  | StoryblokStoryResponseWithRels;
+export type StoryblokApiResponseWithStoryRels<T extends BlokType = BlokType> =
+  | StoryblokStoriesResponseWithRels<T>
+  | StoryblokStoryResponseWithRels<T>;
 
-export type StoryblokApiResponseWithStoryLinks =
-  | StoryblokStoriesResponseWithLinks
-  | StoryblokStoryResponseWithLinks;
+export type StoryblokApiResponseWithStoryLinks<T extends BlokType = BlokType> =
+  | StoryblokStoriesResponseWithLinks<T>
+  | StoryblokStoryResponseWithLinks<T>;

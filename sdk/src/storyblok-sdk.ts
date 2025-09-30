@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance } from 'axios';
 import type {
   BaseStoryblokOptions,
+  BlokType,
   GetLinksParams,
   GetStoriesParams,
   GetStoryParams,
@@ -113,7 +114,7 @@ export class StoryblokSdk {
    * });
    * ```
    */
-  async getStories<T = Record<string, unknown>>(params?: GetStoriesParams) {
+  async getStories<T extends BlokType = BlokType>(params?: GetStoriesParams) {
     return await this.axiosInstance.get<StoryblokStoriesResponse<T>>(
       '/stories',
       {
@@ -128,7 +129,7 @@ export class StoryblokSdk {
    *
    * @see https://www.storyblok.com/docs/api/content-delivery/v2/getting-started/pagination
    */
-  async getAllStories<T = Record<string, unknown>>(
+  async getAllStories<T extends BlokType = BlokType>(
     params?: Omit<GetStoriesParams, 'page' | 'per_page'>,
     options?: {
       perPage?: number;
@@ -158,7 +159,7 @@ export class StoryblokSdk {
    * @param params - Optional parameters
    * @param params.find_by - Set to "uuid" when slug parameter is actually a UUID
    */
-  async getStory<T = Record<string, unknown>>(
+  async getStory<T extends BlokType = BlokType>(
     slug: string,
     params?: GetStoryParams,
   ) {
@@ -173,7 +174,7 @@ export class StoryblokSdk {
   /**
    * Get stories by tag
    */
-  async getStoriesByTag<T = Record<string, unknown>>(
+  async getStoriesByTag<T extends BlokType = BlokType>(
     tag: string,
     params?: Omit<GetStoriesParams, 'filter_query'>,
   ) {
@@ -191,7 +192,7 @@ export class StoryblokSdk {
   /**
    * Get all stories by tag with automatic pagination
    */
-  async getAllStoriesByTag<T = Record<string, unknown>>(
+  async getAllStoriesByTag<T extends BlokType = BlokType>(
     tag: string,
     params?: Omit<GetStoriesParams, 'filter_query' | 'page' | 'per_page'>,
     options?: {
@@ -217,7 +218,7 @@ export class StoryblokSdk {
   /**
    * Get stories that start with a specific path
    */
-  async getStoriesByPath<T = Record<string, unknown>>(
+  async getStoriesByPath<T extends BlokType = BlokType>(
     path: string,
     params?: Omit<GetStoriesParams, 'starts_with'>,
   ) {
@@ -230,7 +231,7 @@ export class StoryblokSdk {
   /**
    * Get all stories by path with automatic pagination
    */
-  async getAllStoriesByPath<T = Record<string, unknown>>(
+  async getAllStoriesByPath<T extends BlokType = BlokType>(
     path: string,
     params?: Omit<GetStoriesParams, 'starts_with' | 'page' | 'per_page'>,
     options?: {
@@ -251,7 +252,7 @@ export class StoryblokSdk {
   /**
    * Search stories by term
    */
-  async searchStories<T = Record<string, unknown>>(
+  async searchStories<T extends BlokType = BlokType>(
     searchTerm: string,
     params?: Omit<GetStoriesParams, 'search_term'>,
   ) {
@@ -264,7 +265,7 @@ export class StoryblokSdk {
   /**
    * Search all stories by term with automatic pagination
    */
-  async searchAllStories<T = Record<string, unknown>>(
+  async searchAllStories<T extends BlokType = BlokType>(
     searchTerm: string,
     params?: Omit<GetStoriesParams, 'search_term' | 'page' | 'per_page'>,
     options?: {
