@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
+import { draftMode } from 'next/headers';
 import type { FC } from 'react';
-import { PreviewStory } from '@/storyblok';
+import { PreviewStory, StoryblokRoot } from '@/storyblok';
 import { getAllLinks } from '@/storyblok/utils/get-all-links';
 import { getStory } from '@/storyblok/utils/get-story';
 
@@ -31,16 +32,16 @@ export const generateMetadata = async (props: PageProps): Promise<Metadata> => {
 
 const Page: FC<PageProps> = async (props) => {
   const params = await props.params;
-  // const draft = await draftMode();
+  const draft = await draftMode();
   const slug = params.page?.join('/') ?? '/';
 
-  // if (draft.isEnabled) {
-  const story = await getStory(slug, { version: 'draft' });
-  return <PreviewStory story={story} />;
-  // }
+  if (draft.isEnabled) {
+    const story = await getStory(slug, { version: 'draft' });
+    return <PreviewStory story={story} />;
+  }
 
-  // const story = await getStory(slug);
-  // return <RenderStory story={story} />;
+  const story = await getStory(slug);
+  return <StoryblokRoot story={story} />;
 };
 
 export default Page;

@@ -3,11 +3,7 @@ import type {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
-import type {
-  StoryblokComponent,
-  StoryblokLink,
-  StoryblokStory,
-} from '../types';
+import type { BlokType, StoryblokLink, StoryType } from '../types';
 import {
   extractSlugFromUrl,
   isIndividualStoryRequest,
@@ -137,15 +133,15 @@ export const storyblokPathConfig =
  */
 type StoryblokResponseData =
   | {
-      story: StoryblokStory<StoryblokComponent>;
-      rels?: StoryblokStory<StoryblokComponent>[];
-      links?: StoryblokStory<StoryblokComponent>[];
+      story: StoryType<BlokType>;
+      rels?: StoryType<BlokType>[];
+      links?: StoryType<BlokType>[];
       [key: string]: unknown;
     }
   | {
-      stories: StoryblokStory<StoryblokComponent>[];
-      rels?: StoryblokStory<StoryblokComponent>[];
-      links?: StoryblokStory<StoryblokComponent>[];
+      stories: StoryType<BlokType>[];
+      rels?: StoryType<BlokType>[];
+      links?: StoryType<BlokType>[];
       [key: string]: unknown;
     }
   | { links: Record<string, StoryblokLink>; [key: string]: unknown }
@@ -167,17 +163,16 @@ function removeBasePathFromResponse(
     const processedData: Record<string, unknown> = {
       ...data,
       story: processStoryRecursively(
-        data.story as StoryblokStory<StoryblokComponent>,
+        data.story as StoryType<BlokType>,
         basePath,
       ),
     };
 
     // Process rels array if present
     if ('rels' in data && Array.isArray(data.rels)) {
-      processedData.rels = (
-        data.rels as StoryblokStory<StoryblokComponent>[]
-      ).map((story: StoryblokStory<StoryblokComponent>) =>
-        processStoryRecursively(story, basePath),
+      processedData.rels = (data.rels as StoryType<BlokType>[]).map(
+        (story: StoryType<BlokType>) =>
+          processStoryRecursively(story, basePath),
       );
     }
 
@@ -216,10 +211,7 @@ function removeBasePathFromResponse(
           'slug' in item &&
           'content' in item
         ) {
-          return processStoryRecursively(
-            item as StoryblokStory<StoryblokComponent>,
-            basePath,
-          );
+          return processStoryRecursively(item as StoryType<BlokType>, basePath);
         }
         return item;
       });
@@ -232,18 +224,17 @@ function removeBasePathFromResponse(
   if ('stories' in data && Array.isArray(data.stories)) {
     const processedData: Record<string, unknown> = {
       ...data,
-      stories: (data.stories as StoryblokStory<StoryblokComponent>[]).map(
-        (story: StoryblokStory<StoryblokComponent>) =>
+      stories: (data.stories as StoryType<BlokType>[]).map(
+        (story: StoryType<BlokType>) =>
           processStoryRecursively(story, basePath),
       ),
     };
 
     // Process rels array if present
     if ('rels' in data && Array.isArray(data.rels)) {
-      processedData.rels = (
-        data.rels as StoryblokStory<StoryblokComponent>[]
-      ).map((story: StoryblokStory<StoryblokComponent>) =>
-        processStoryRecursively(story, basePath),
+      processedData.rels = (data.rels as StoryType<BlokType>[]).map(
+        (story: StoryType<BlokType>) =>
+          processStoryRecursively(story, basePath),
       );
     }
 
@@ -282,10 +273,7 @@ function removeBasePathFromResponse(
           'slug' in item &&
           'content' in item
         ) {
-          return processStoryRecursively(
-            item as StoryblokStory<StoryblokComponent>,
-            basePath,
-          );
+          return processStoryRecursively(item as StoryType<BlokType>, basePath);
         }
         return item;
       });
@@ -319,9 +307,9 @@ function removeBasePathFromResponse(
  * Processes a story object recursively to remove basePath from relevant fields
  */
 function processStoryRecursively(
-  story: StoryblokStory<StoryblokComponent>,
+  story: StoryType<BlokType>,
   basePath: string,
-): StoryblokStory<StoryblokComponent> {
+): StoryType<BlokType> {
   const basePathWithoutSlash = basePath.replace(/\/$/, '');
 
   return {
@@ -362,7 +350,7 @@ function processStoryRecursively(
     content: processContentRecursively(
       story.content as unknown as Record<string, unknown>,
       basePath,
-    ) as unknown as StoryblokComponent,
+    ) as unknown as BlokType,
   };
 }
 

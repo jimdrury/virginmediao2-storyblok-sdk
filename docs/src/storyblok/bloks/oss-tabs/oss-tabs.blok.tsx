@@ -1,17 +1,17 @@
-import type { StoryblokComponent } from '@virginmediao2/storyblok-sdk/src';
+import type { BlokType } from '@virginmediao2/storyblok-sdk/src';
 import { Tab, Tabs, TabsProvider } from '@/components/tabs';
-import type { OSS_BLOK } from '@/storyblok/bloks';
+import type { BLOK } from '@/storyblok/bloks';
 import type { OssTabBlok } from '@/storyblok/bloks/oss-tab/oss-tab.blok';
 import type { BC } from '@/storyblok/engine';
-import { storyblokEditable } from '@/storyblok/engine/render/storyblok-editable';
+import { storyblokEditable } from '@/storyblok/engine';
 
-export type OssTabsBlok = StoryblokComponent<OSS_BLOK.TABS> & {
+export type OssTabsBlok = BlokType<BLOK.OSS_TABS> & {
   tabs: Array<OssTabBlok>;
 };
 
 export const OssTabs: BC<OssTabsBlok> = ({
   blok: { tabs, ...blok },
-  RenderComponent,
+  StoryblokComponent,
 }) => {
   const firstTab = tabs[0];
 
@@ -28,7 +28,7 @@ export const OssTabs: BC<OssTabsBlok> = ({
 
         <div className="mt-2">
           {tabs.map((blok) => (
-            <RenderComponent key={blok._uid} blok={blok} />
+            <StoryblokComponent key={blok._uid} blok={blok} />
           ))}
         </div>
       </TabsProvider>

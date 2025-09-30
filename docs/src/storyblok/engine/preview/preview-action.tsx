@@ -1,13 +1,12 @@
 'use server';
 
-import type {
-  StoryblokComponent,
-  StoryblokStory,
-} from '@virginmediao2/storyblok-sdk/src';
-import { initRenderStory } from '../render/render-story';
+import type { ReactNode } from 'react';
+import type { StoryblokRootProps } from '../engine.interface';
+import { initStoryblokRoot } from '../render/render-story';
 
-export async function previewAction(story: StoryblokStory<StoryblokComponent>) {
-  const RenderStory = initRenderStory(globalThis.renderConfig);
+export type PreviewAction = (props: StoryblokRootProps) => Promise<ReactNode>;
 
-  return <RenderStory story={story} />;
-}
+export const previewAction: PreviewAction = async (props) => {
+  const StoryblokRoot = initStoryblokRoot(globalThis.renderConfig);
+  return <StoryblokRoot {...props} />;
+};

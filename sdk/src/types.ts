@@ -37,7 +37,7 @@ export interface StoryblokManagerSdkOptions extends BaseStoryblokOptions {
   oauthToken?: string;
 }
 
-export interface StoryblokComponent<T = string> {
+export interface BlokType<T = string> {
   _uid: string;
   _editable?: string;
   component: T;
@@ -45,9 +45,7 @@ export interface StoryblokComponent<T = string> {
 }
 
 // Storyblok API response interfaces
-export interface StoryblokStory<
-  T extends StoryblokComponent = StoryblokComponent,
-> {
+export interface StoryType<T extends BlokType = BlokType> {
   id: number;
   uuid: string;
   name: string;
@@ -81,15 +79,15 @@ export interface StoryblokStory<
   default_full_slug?: string;
 }
 
-export interface StoryblokStoriesResponse<T extends StoryblokComponent> {
-  stories: StoryblokStory<T>[];
+export interface StoryblokStoriesResponse<T extends BlokType> {
+  stories: StoryType<T>[];
   cv: number;
   rels: string[];
   links: string[];
 }
 
-export interface StoryblokStoryResponse<T extends StoryblokComponent> {
-  story: StoryblokStory<T>;
+export interface StoryblokStoryResponse<T extends BlokType> {
+  story: StoryType<T>;
   cv: number;
   rels: string[];
   links: string[];

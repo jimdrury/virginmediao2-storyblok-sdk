@@ -973,7 +973,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 The SDK is built with TypeScript-first approach and provides excellent type safety:
 
 ```typescript
-import { StoryblokSdk, StoryblokStory } from "@virginmediao2/storyblok-sdk";
+import { StoryblokSdk, StoryType } from "@virginmediao2/storyblok-sdk";
 
 // Define your content types
 interface PageContent {

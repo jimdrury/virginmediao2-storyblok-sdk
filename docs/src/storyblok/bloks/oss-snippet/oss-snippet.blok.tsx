@@ -1,10 +1,10 @@
-import type { StoryblokComponent } from '@virginmediao2/storyblok-sdk/src';
+import type { BlokType } from '@virginmediao2/storyblok-sdk/src';
 import { CodeSnippet, type LANGUAGE } from '@/components/code-snippet';
-import type { OSS_BLOK } from '@/storyblok/bloks';
+import type { BLOK } from '@/storyblok/bloks';
 import type { BC } from '@/storyblok/engine';
-import { storyblokEditable } from '@/storyblok/engine/render/storyblok-editable';
+import { storyblokEditable } from '@/storyblok/engine';
 
-export type OssSnippetBlok = StoryblokComponent<OSS_BLOK.SNIPPET> & {
+export type OssSnippetBlok = BlokType<BLOK.OSS_SNIPPET> & {
   code: {
     code: string;
     title?: string;

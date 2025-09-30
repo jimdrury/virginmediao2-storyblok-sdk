@@ -32,12 +32,13 @@ export const storyblokSdk = new StoryblokSdk({
   ],
 });
 
-export const { RenderStory, PreviewStory } = initStoryblokEngine({
-  components: {
-    [BLOK.OSS_SNIPPET]: OssSnippet,
-    [BLOK.OSS_PAGE]: OssPage,
-    [BLOK.OSS_TABS]: OssTabs,
-    [BLOK.OSS_TAB]: OssTab,
-    [BLOK.OSS_TEXT]: OssText,
-  },
-});
+export const { StoryblokRoot, PreviewStory, storyblokEditable } =
+  initStoryblokEngine({
+    components: {
+      [BLOK.OSS_SNIPPET]: OssSnippet,
+      [BLOK.OSS_PAGE]: OssPage,
+      [BLOK.OSS_TABS]: OssTabs,
+      [BLOK.OSS_TAB]: OssTab,
+      [BLOK.OSS_TEXT]: OssText,
+    },
+  });

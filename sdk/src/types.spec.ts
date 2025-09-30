@@ -13,16 +13,16 @@ import type {
   StoryblokManagerSdkOptions,
   StoryblokRetryOptions,
   StoryblokStoriesResponse,
-  StoryblokStory,
-  StoryblokStoryResponse,
   StoryblokTag,
   StoryblokTagsResponse,
+  StoryType,
+  StoryTypeResponse,
 } from './types';
 
 describe('types validation', () => {
-  describe('StoryblokStory interface', () => {
+  describe('StoryType interface', () => {
     it('should accept valid story objects', () => {
-      const story: StoryblokStory = {
+      const story: StoryType = {
         id: 123,
         uuid: 'test-uuid',
         name: 'Test Story',
@@ -55,7 +55,7 @@ describe('types validation', () => {
         author: string;
       }
 
-      const story: StoryblokStory<BlogContent> = {
+      const story: StoryType<BlogContent> = {
         id: 123,
         uuid: 'test-uuid',
         name: 'Test Story',
@@ -99,9 +99,9 @@ describe('types validation', () => {
     });
   });
 
-  describe('StoryblokStoryResponse interface', () => {
+  describe('StoryTypeResponse interface', () => {
     it('should accept valid story response', () => {
-      const response: StoryblokStoryResponse = {
+      const response: StoryTypeResponse = {
         story: {
           id: 123,
           uuid: 'test-uuid',
@@ -472,7 +472,7 @@ describe('types validation', () => {
 
   describe('type compatibility and inference', () => {
     it('should infer types correctly in function parameters', () => {
-      function processStory<T>(story: StoryblokStory<T>): T {
+      function processStory<T>(story: StoryType<T>): T {
         return story.content;
       }
 
@@ -481,7 +481,7 @@ describe('types validation', () => {
         body: string;
       }
 
-      const story: StoryblokStory<BlogContent> = {
+      const story: StoryType<BlogContent> = {
         id: 123,
         uuid: 'test-uuid',
         name: 'Test Story',

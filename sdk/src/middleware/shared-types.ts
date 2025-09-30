@@ -1,38 +1,35 @@
 import type {
-  StoryblokComponent,
+  BlokType,
   StoryblokStoriesResponse,
-  StoryblokStory,
   StoryblokStoryResponse,
+  StoryType,
 } from '../types';
 
-export interface StoryblokStoriesResponseWithRels<
-  T extends StoryblokComponent = StoryblokComponent,
-> extends Omit<StoryblokStoriesResponse<T>, 'rels'> {
-  rels: StoryblokStory<T>[];
+export interface StoryblokStoriesResponseWithRels<T extends BlokType = BlokType>
+  extends Omit<StoryblokStoriesResponse<T>, 'rels'> {
+  rels: StoryType<T>[];
 }
 
-export interface StoryblokStoryResponseWithRels<
-  T extends StoryblokComponent = StoryblokComponent,
-> extends Omit<StoryblokStoryResponse<T>, 'rels'> {
-  rels: StoryblokStory<T>[];
+export interface StoryblokStoryResponseWithRels<T extends BlokType = BlokType>
+  extends Omit<StoryblokStoryResponse<T>, 'rels'> {
+  rels: StoryType<T>[];
 }
 
 export interface StoryblokStoriesResponseWithLinks<
-  T extends StoryblokComponent = StoryblokComponent,
+  T extends BlokType = BlokType,
 > extends Omit<StoryblokStoriesResponse<T>, 'links'> {
-  links: StoryblokStory<T>[];
+  links: StoryType<T>[];
 }
 
-export interface StoryblokStoryResponseWithLinks<
-  T extends StoryblokComponent = StoryblokComponent,
-> extends Omit<StoryblokStoryResponse<T>, 'links'> {
-  links: StoryblokStory<T>[];
+export interface StoryblokStoryResponseWithLinks<T extends BlokType = BlokType>
+  extends Omit<StoryblokStoryResponse<T>, 'links'> {
+  links: StoryType<T>[];
 }
 
-export type StoryblokApiResponseWithStoryRels<
-  T extends StoryblokComponent = StoryblokComponent,
-> = StoryblokStoriesResponseWithRels<T> | StoryblokStoryResponseWithRels<T>;
+export type StoryblokApiResponseWithStoryRels<T extends BlokType = BlokType> =
+  | StoryblokStoriesResponseWithRels<T>
+  | StoryblokStoryResponseWithRels<T>;
 
-export type StoryblokApiResponseWithStoryLinks<
-  T extends StoryblokComponent = StoryblokComponent,
-> = StoryblokStoriesResponseWithLinks<T> | StoryblokStoryResponseWithLinks<T>;
+export type StoryblokApiResponseWithStoryLinks<T extends BlokType = BlokType> =
+  | StoryblokStoriesResponseWithLinks<T>
+  | StoryblokStoryResponseWithLinks<T>;

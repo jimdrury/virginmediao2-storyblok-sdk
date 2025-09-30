@@ -3,7 +3,7 @@ import type {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
-import type { StoryblokComponent, StoryblokStory } from '../types';
+import type { BlokType, StoryType } from '../types';
 import type {
   StoryblokApiResponseWithStoryLinks,
   StoryblokApiResponseWithStoryRels,
@@ -138,9 +138,8 @@ export const storyblokResolverConfig =
 
         // Process relations if configured
         if (hasRelationsConfig) {
-          const rels = (data.rels ||
-            []) as StoryblokStory<StoryblokComponent>[];
-          const relsMap = new Map<string, StoryblokStory<StoryblokComponent>>();
+          const rels = (data.rels || []) as StoryType<BlokType>[];
+          const relsMap = new Map<string, StoryType<BlokType>>();
           rels.forEach((rel) => {
             relsMap.set(rel.uuid, rel);
           });
@@ -155,14 +154,13 @@ export const storyblokResolverConfig =
           }
 
           if ('stories' in data && data.stories) {
-            data.stories = data.stories.map(
-              (story: StoryblokStory<StoryblokComponent>) =>
-                resolveStoryRelations(
-                  story,
-                  relsMap,
-                  config.resolveRelations, // We know this exists because hasRelationsConfig is true
-                  config.removeUnresolvedRelations,
-                ),
+            data.stories = data.stories.map((story: StoryType<BlokType>) =>
+              resolveStoryRelations(
+                story,
+                relsMap,
+                config.resolveRelations, // We know this exists because hasRelationsConfig is true
+                config.removeUnresolvedRelations,
+              ),
             );
           }
         }
@@ -170,14 +168,11 @@ export const storyblokResolverConfig =
         // Process links if configured
         if (hasLinksConfig) {
           const links = data.links || [];
-          const linksMap = new Map<
-            string,
-            StoryblokStory<StoryblokComponent>
-          >();
+          const linksMap = new Map<string, StoryType<BlokType>>();
 
           // Handle both array format (from stories API) and object format (from links API)
           if (Array.isArray(links)) {
-            (links as StoryblokStory<StoryblokComponent>[]).forEach((link) => {
+            (links as StoryType<BlokType>[]).forEach((link) => {
               linksMap.set(link.uuid, link);
             });
           } else if (typeof links === 'object' && links !== null) {
@@ -190,10 +185,7 @@ export const storyblokResolverConfig =
                 'uuid' in link &&
                 typeof link.uuid === 'string'
               ) {
-                linksMap.set(
-                  link.uuid,
-                  link as StoryblokStory<StoryblokComponent>,
-                );
+                linksMap.set(link.uuid, link as StoryType<BlokType>);
               }
             });
           }
@@ -203,9 +195,8 @@ export const storyblokResolverConfig =
           }
 
           if ('stories' in data && data.stories) {
-            data.stories = data.stories.map(
-              (story: StoryblokStory<StoryblokComponent>) =>
-                resolveStoryLinks(story, linksMap),
+            data.stories = data.stories.map((story: StoryType<BlokType>) =>
+              resolveStoryLinks(story, linksMap),
             );
           }
         }
@@ -220,11 +211,11 @@ export const storyblokResolverConfig =
  * Resolves relations in a story object
  */
 function resolveStoryRelations(
-  story: StoryblokStory<StoryblokComponent>,
-  relsMap: Map<string, StoryblokStory<StoryblokComponent>>,
+  story: StoryType<BlokType>,
+  relsMap: Map<string, StoryType<BlokType>>,
   resolveRelations: `${string}.${string}`[] | undefined,
   removeUnresolvedRelations = false,
-): StoryblokStory<StoryblokComponent> {
+): StoryType<BlokType> {
   if (!story.content || !resolveRelations) {
     return story;
   }
@@ -235,7 +226,7 @@ function resolveStoryRelations(
     relsMap,
     resolveRelations,
     removeUnresolvedRelations,
-  ) as unknown as StoryblokComponent;
+  ) as unknown as BlokType;
 
   return resolvedStory;
 }
@@ -245,7 +236,7 @@ function resolveStoryRelations(
  */
 function resolveObjectRelations(
   obj: unknown,
-  relsMap: Map<string, StoryblokStory<StoryblokComponent>>,
+  relsMap: Map<string, StoryType<BlokType>>,
   resolveRelations: `${string}.${string}`[] | undefined,
   removeUnresolvedRelations = false,
 ): unknown {
@@ -307,7 +298,7 @@ function resolveObjectRelations(
  */
 function resolveFieldRelations(
   field: unknown,
-  relsMap: Map<string, StoryblokStory<StoryblokComponent>>,
+  relsMap: Map<string, StoryType<BlokType>>,
   removeUnresolvedRelations = false,
 ): unknown {
   if (typeof field === 'string') {
@@ -344,9 +335,9 @@ function resolveFieldRelations(
  * Resolves links in a story object
  */
 function resolveStoryLinks(
-  story: StoryblokStory<StoryblokComponent>,
-  linksMap: Map<string, StoryblokStory<StoryblokComponent>>,
-): StoryblokStory<StoryblokComponent> {
+  story: StoryType<BlokType>,
+  linksMap: Map<string, StoryType<BlokType>>,
+): StoryType<BlokType> {
   if (!story.content) {
     return story;
   }
@@ -355,7 +346,7 @@ function resolveStoryLinks(
   resolvedStory.content = resolveObjectLinks(
     story.content as unknown as Record<string, unknown>,
     linksMap,
-  ) as unknown as StoryblokComponent;
+  ) as unknown as BlokType;
 
   return resolvedStory;
 }
@@ -365,7 +356,7 @@ function resolveStoryLinks(
  */
 function resolveObjectLinks(
   obj: unknown,
-  linksMap: Map<string, StoryblokStory<StoryblokComponent>>,
+  linksMap: Map<string, StoryType<BlokType>>,
 ): unknown {
   if (!obj || typeof obj !== 'object') {
     return obj;

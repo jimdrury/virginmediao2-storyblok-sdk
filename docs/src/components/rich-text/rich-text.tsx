@@ -140,6 +140,11 @@ const options: RenderOptions = {
           </Link>
         );
       }
+
+      if (!href) {
+        return <em className="text-red-500">{children}</em>;
+      }
+
       if (href?.match(/^(https?:)?\/\//)) {
         return (
           <Link href={href} target={target}>

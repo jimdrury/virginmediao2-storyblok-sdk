@@ -1,6 +1,6 @@
-import type { StoryblokComponent } from '@virginmediao2/storyblok-sdk/src';
+import type { BlokType } from '@virginmediao2/storyblok-sdk/src';
 
-type StoryblokEditableProps = Partial<StoryblokComponent>;
+type StoryblokEditableProps = Partial<BlokType>;
 
 export const storyblokEditable = (blok: StoryblokEditableProps) => {
   if (typeof blok !== 'object' || !blok._editable) {

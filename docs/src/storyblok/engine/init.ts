@@ -1,19 +1,17 @@
 import type { StoryblokEngineProps } from './engine.interface';
 import { initPreviewStory } from './preview';
-import { initRenderStory } from './render/render-story';
-import { storyblokEditable } from './render/storyblok-editable';
+import { initStoryblokRoot } from './render';
 
 declare global {
   var renderConfig: StoryblokEngineProps;
 }
 
 export const initStoryblokEngine = (props: StoryblokEngineProps) => {
-  const RenderStory = initRenderStory(props);
+  const StoryblokRoot = initStoryblokRoot(props);
   const PreviewStory = initPreviewStory(props);
 
   return {
-    RenderStory,
+    StoryblokRoot,
     PreviewStory,
-    storyblokEditable,
   };
 };
