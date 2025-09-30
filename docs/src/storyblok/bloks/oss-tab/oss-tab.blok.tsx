@@ -1,10 +1,10 @@
 import type { StoryblokComponent } from '@virginmediao2/storyblok-sdk';
 import { TabPanel } from '@/components/tabs';
-import type { BLOK } from '@/storyblok/bloks';
+import type { OSS_BLOK } from '@/storyblok/bloks';
 import type { BC } from '@/storyblok/engine';
 import { storyblokEditable } from '@/storyblok/engine/storyblok-editable';
 
-export type OssTabBlok = StoryblokComponent<BLOK.OSS_TAB> & {
+export type OssTabBlok = StoryblokComponent<OSS_BLOK.TAB> & {
   title: string;
   content: Array<StoryblokComponent>;
 };

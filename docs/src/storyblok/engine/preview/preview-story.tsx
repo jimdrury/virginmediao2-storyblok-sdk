@@ -3,23 +3,20 @@ import type {
   StoryblokStory,
 } from '@virginmediao2/storyblok-sdk';
 import type { FC } from 'react';
-import type { PreviewAction } from './interface';
+import type { StoryblokEngineProps } from '../engine.interface';
+import { previewAction } from './preview-action';
 import { PreviewClient } from './preview-client';
 
 export interface PreviewStoryProps {
   story: StoryblokStory<StoryblokComponent>;
 }
 
-export interface InitPreviewStoryProps {
-  previewAction: PreviewAction;
-}
+export const initPreviewStory = (config: StoryblokEngineProps) => {
+  globalThis.renderConfig = config;
 
-export const initPreviewStory = ({ previewAction }: InitPreviewStoryProps) => {
   const PreviewStory: FC<PreviewStoryProps> = async ({ story }) => {
-    const render = await previewAction({ story });
-    return (
-      <PreviewClient previewAction={previewAction}>{render}</PreviewClient>
-    );
+    const render = await previewAction(story);
+    return <PreviewClient>{render}</PreviewClient>;
   };
 
   return PreviewStory;

@@ -5,7 +5,7 @@ import {
   storyblokResolverConfig,
 } from '@virginmediao2/storyblok-sdk';
 import { STORYBLOK } from '@/environment/storyblok';
-import { BLOK } from './bloks';
+import { OSS_BLOK } from './bloks';
 import OssPage from './bloks/oss-page';
 import OssSnippet from './bloks/oss-snippet';
 import OssTab from './bloks/oss-tab';
@@ -31,11 +31,11 @@ export const storyblokSdk = new StoryblokSdk({
   ],
 });
 
-export const { RenderStory } = initStoryblokEngine({
+export const { RenderStory, PreviewStory } = initStoryblokEngine({
   components: {
-    [BLOK.OSS_SNIPPET]: OssSnippet,
-    [BLOK.OSS_PAGE]: OssPage,
-    [BLOK.OSS_TABS]: OssTabs,
-    [BLOK.OSS_TAB]: OssTab,
+    [OSS_BLOK.SNIPPET]: OssSnippet,
+    [OSS_BLOK.PAGE]: OssPage,
+    [OSS_BLOK.TABS]: OssTabs,
+    [OSS_BLOK.TAB]: OssTab,
   },
 });
