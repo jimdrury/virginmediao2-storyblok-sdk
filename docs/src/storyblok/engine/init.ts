@@ -1,5 +1,5 @@
 import type { StoryblokEngineProps } from './engine.interface';
-import { initPreviewStory } from './preview';
+import { initPreviewRoot } from './preview';
 import { initStoryblokRoot } from './render';
 
 declare global {
@@ -8,10 +8,10 @@ declare global {
 
 export const initStoryblokEngine = (props: StoryblokEngineProps) => {
   const StoryblokRoot = initStoryblokRoot(props);
-  const PreviewStory = initPreviewStory(props);
+  const PreviewRoot = initPreviewRoot(props);
 
   return {
     StoryblokRoot,
-    PreviewStory,
+    PreviewRoot,
   };
 };
