@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { draftMode } from 'next/headers';
 import type { FC } from 'react';
-import { PreviewStory, StoryblokRoot } from '@/storyblok';
+import { PreviewRoot, StoryblokRoot } from '@/storyblok';
 import { getAllLinks } from '@/storyblok/utils/get-all-links';
 import { getStory } from '@/storyblok/utils/get-story';
 
@@ -37,7 +37,7 @@ const Page: FC<PageProps> = async (props) => {
 
   if (draft.isEnabled) {
     const story = await getStory(slug, { version: 'draft' });
-    return <PreviewStory story={story} />;
+    return <PreviewRoot story={story} />;
   }
 
   const story = await getStory(slug);

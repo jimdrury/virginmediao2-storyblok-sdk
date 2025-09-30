@@ -32,7 +32,7 @@ export const storyblokSdk = new StoryblokSdk({
   ],
 });
 
-export const { StoryblokRoot, PreviewStory } = initStoryblokEngine({
+export const { StoryblokRoot, PreviewRoot } = initStoryblokEngine({
   components: {
     [BLOK.OSS_SNIPPET]: OssSnippet,
     [BLOK.OSS_PAGE]: OssPage,
