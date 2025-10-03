@@ -14,6 +14,12 @@ export const generateStaticParams = async () => {
 
 interface PageProps {
   params: Promise<{ page: string[] }>;
+  searchParams: Promise<
+    Partial<{
+      '_storyblok_tk[timestamp]': string;
+      _storyblok_release: string;
+    }>
+  >;
 }
 
 export const generateMetadata = async (props: PageProps): Promise<Metadata> => {
@@ -36,11 +42,26 @@ const Page: FC<PageProps> = async (props) => {
   const slug = params.page.join('/');
 
   if (draft.isEnabled) {
-    const story = await getStory(slug, { version: 'draft' });
+    const searchParams = await props.searchParams;
+
+    const cv = Number(searchParams['_storyblok_tk[timestamp]'] || 0);
+    const from_release = Number(searchParams._storyblok_release);
+
+    const story = await getStory(slug, {
+      version: 'draft',
+      cv,
+      from_release,
+    });
+
     return (
       <>
         <StoryblokToolbar />
-        <PreviewRoot story={story} />
+        <PreviewRoot
+          story={story}
+          cv={cv}
+          from_release={from_release}
+          version="draft"
+        />
       </>
     );
   }
@@ -49,7 +70,7 @@ const Page: FC<PageProps> = async (props) => {
   return (
     <>
       <StoryblokToolbar />
-      <StoryblokRoot story={story} />
+      <StoryblokRoot story={story} version="published" />
     </>
   );
 };
