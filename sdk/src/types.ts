@@ -220,6 +220,12 @@ export interface GetStoryParams {
    */
   cv?: number;
   /**
+   * From release
+   */
+  from_release?: number;
+  /**
+   */
+  /**
    * Resolve relations
    */
   resolve_relations?: string | string[];

@@ -3,11 +3,21 @@ import type { FC } from 'react';
 
 export interface StoryblokRootProps {
   story: StoryType<BlokType>;
+  version: 'published' | 'draft';
   [rootContextProp: string]: unknown;
 }
 
-export type StoryblokContextProps<T = Record<string, unknown>> =
-  StoryblokRootProps & Partial<T>;
+export type StoryblokPreviewRootProps = StoryblokRootProps & {
+  cv?: number;
+  from_release?: number;
+  version: 'draft';
+};
+
+export type StoryblokContextProps<T = Record<string, unknown>> = (
+  | StoryblokRootProps
+  | StoryblokPreviewRootProps
+) &
+  Partial<T>;
 
 export interface StoryblokComponentProps {
   blok: BlokType;
