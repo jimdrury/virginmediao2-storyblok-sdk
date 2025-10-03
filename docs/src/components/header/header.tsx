@@ -8,7 +8,7 @@ interface HeaderProps {
 }
 
 export const Header: FC<HeaderProps> = ({ start, end }) => (
-  <header className="shadow-md px-2 py-4 md:px-6 sticky top-0 z-50 bg-white">
+  <header className="shadow-md px-2 py-4 md:px-6 z-50 bg-white">
     <div className="grid grid-cols-[1fr_auto_1fr] items-center container mx-auto">
       <div className="flex justify-start">{start}</div>
       <div className="flex justify-center">

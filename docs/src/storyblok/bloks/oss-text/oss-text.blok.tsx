@@ -1,10 +1,10 @@
 import type { BlokType } from '@virginmediao2/storyblok-sdk/src';
 import type { StoryblokRichtext } from 'storyblok-rich-text-react-renderer';
 import { RichText } from '@/components/rich-text';
-import type { BLOK } from '@/storyblok/bloks';
+import type { OSS_BLOK } from '@/storyblok/bloks';
 import { type BC, storyblokEditable } from '@/storyblok/engine';
 
-export type OssTextBlok = BlokType<BLOK.OSS_TEXT> & {
+export type OssTextBlok = BlokType<OSS_BLOK.TEXT> & {
   content: StoryblokRichtext;
 };
 

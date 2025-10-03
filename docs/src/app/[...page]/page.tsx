@@ -1,16 +1,15 @@
 import type { Metadata } from 'next';
 import { draftMode } from 'next/headers';
 import type { FC } from 'react';
-import { PreviewRoot, StoryblokRoot } from '@/storyblok';
-import { getAllLinks } from '@/storyblok/utils/get-all-links';
+import { PreviewRoot, StoryblokRoot, StoryblokToolbar } from '@/storyblok';
 import { getStory } from '@/storyblok/utils/get-story';
 
-export const generateStaticParams = async () => {
-  const links = await getAllLinks();
-  return links.map((link) => ({
-    page: link.real_path.split('/').filter(Boolean),
-  }));
-};
+// export const generateStaticParams = async () => {
+//   const links = await getAllLinks();
+//   return links.map((link) => ({
+//     page: link.real_path.split('/').filter(Boolean),
+//   }));
+// };
 
 interface PageProps {
   params: Promise<{ page: string[] }>;
@@ -37,11 +36,21 @@ const Page: FC<PageProps> = async (props) => {
 
   if (draft.isEnabled) {
     const story = await getStory(slug, { version: 'draft' });
-    return <PreviewRoot story={story} />;
+    return (
+      <>
+        <StoryblokToolbar />
+        <PreviewRoot story={story} />
+      </>
+    );
   }
 
   const story = await getStory(slug);
-  return <StoryblokRoot story={story} />;
+  return (
+    <>
+      <StoryblokToolbar />
+      <StoryblokRoot story={story} />
+    </>
+  );
 };
 
 export default Page;
