@@ -45,7 +45,7 @@ const Page: FC<PageProps> = async (props) => {
     const searchParams = await props.searchParams;
 
     const cv = Number(searchParams['_storyblok_tk[timestamp]'] || 0);
-    const from_release = Number(searchParams._storyblok_release);
+    const from_release = Number(searchParams._storyblok_release || 0);
 
     const story = await getStory(slug, {
       version: 'draft',
