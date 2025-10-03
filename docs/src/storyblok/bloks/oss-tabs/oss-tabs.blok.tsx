@@ -1,16 +1,18 @@
 import type { BlokType } from '@virginmediao2/storyblok-sdk/src';
 import { Tab, Tabs, TabsProvider } from '@/components/tabs';
-import type { BLOK } from '@/storyblok/bloks';
+import type { OSS_BLOK } from '@/storyblok/bloks';
 import type { OssTabBlok } from '@/storyblok/bloks/oss-tab/oss-tab.blok';
 import type { BC } from '@/storyblok/engine';
 import { storyblokEditable } from '@/storyblok/engine';
 
-export type OssTabsBlok = BlokType<BLOK.OSS_TABS> & {
+export type OssTabsBlok = BlokType<OSS_BLOK.TABS> & {
+  label: string;
   tabs: Array<OssTabBlok>;
+  variant?: 'border' | 'box' | 'lift';
 };
 
 export const OssTabs: BC<OssTabsBlok> = ({
-  blok: { tabs, ...blok },
+  blok: { tabs, label, variant = 'border', ...blok },
   StoryblokComponent,
 }) => {
   const firstTab = tabs[0];
@@ -18,7 +20,7 @@ export const OssTabs: BC<OssTabsBlok> = ({
   return (
     <div {...storyblokEditable(blok)}>
       <TabsProvider defaultActiveTab={firstTab._uid}>
-        <Tabs variant="border">
+        <Tabs label={label} variant={variant}>
           {tabs.map((tab) => (
             <Tab key={`tab-${tab._uid}`} tabId={tab._uid}>
               {tab.title}

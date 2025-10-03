@@ -29,7 +29,9 @@ interface RootLayoutProps {
 const RootLayout: FC<RootLayoutProps> = ({ children }) => {
   return (
     <html lang="en">
-      <body className={`${onAir.className} flex flex-col min-h-screen`}>
+      <body
+        className={`${onAir.className} flex flex-col min-h-screen antialiased`}
+      >
         <Header />
         <main className="flex-grow">{children}</main>
         <Footer />

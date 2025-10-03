@@ -1,5 +1,6 @@
 'use client';
 
+import { announce } from '@react-aria/live-announcer';
 import { type FC, useState } from 'react';
 import { FaCheck, FaCopy, FaTriangleExclamation } from 'react-icons/fa6';
 
@@ -14,6 +15,7 @@ export const CopyToClipboard: FC<CopyToClipboardProps> = ({ content }) => {
     navigator.clipboard.writeText(content).then(
       () => {
         setState('success');
+        announce('Copied to clipboard');
 
         setTimeout(() => {
           setState('info');
@@ -21,6 +23,7 @@ export const CopyToClipboard: FC<CopyToClipboardProps> = ({ content }) => {
       },
       () => {
         setState('error');
+        announce('Error copying to clipboard');
         setTimeout(() => {
           setState('info');
         }, 1000);
@@ -33,27 +36,11 @@ export const CopyToClipboard: FC<CopyToClipboardProps> = ({ content }) => {
       type="button"
       className="btn btn-ghost btn-sm btn-circle"
       onClick={() => copyToClipboard()}
-      aria-live="polite"
-      aria-atomic="true"
     >
-      {state === 'success' && (
-        <>
-          <span className="sr-only">Copied to clipboard</span>
-          <FaCheck />
-        </>
-      )}
-      {state === 'error' && (
-        <>
-          <span className="sr-only">Error copying to clipboard</span>
-          <FaTriangleExclamation />
-        </>
-      )}
-      {state === 'info' && (
-        <>
-          <span className="sr-only">Copy to clipboard</span>
-          <FaCopy />
-        </>
-      )}
+      {state === 'success' && <FaCheck />}
+      {state === 'error' && <FaTriangleExclamation />}
+      {state === 'info' && <FaCopy />}
+      <span className="sr-only">Copy to clipboard</span>
     </button>
   );
 };

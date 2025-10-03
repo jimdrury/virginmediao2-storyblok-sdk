@@ -1,8 +1,8 @@
 import type { BlokType } from '@virginmediao2/storyblok-sdk/src';
-import type { BLOK } from '@/storyblok/bloks';
+import type { OSS_BLOK } from '@/storyblok/bloks';
 import type { BC } from '@/storyblok/engine';
 
-export type OssPageBlok = BlokType<BLOK.OSS_PAGE> & {
+export type OssPageBlok = BlokType<OSS_BLOK.PAGE> & {
   content: Array<BlokType>;
 };
 

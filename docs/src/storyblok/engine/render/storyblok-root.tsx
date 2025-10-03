@@ -8,8 +8,11 @@ import type {
 } from '../engine.interface';
 
 export const initStoryblokRoot = ({ components }: StoryblokEngineProps) => {
-  const StoryblokRoot: FC<StoryblokRootProps> = (props) => {
-    const StoryblokComponent: FC<StoryblokComponentProps> = ({ blok }) => {
+  const StoryblokRoot: FC<StoryblokRootProps> = (rootProps) => {
+    const StoryblokComponent: FC<StoryblokComponentProps> = ({
+      blok,
+      ...localProps
+    }) => {
       const Component = components[blok.component] as BC<BlokType>;
 
       if (!Component) {
@@ -20,12 +23,15 @@ export const initStoryblokRoot = ({ components }: StoryblokEngineProps) => {
         <Component
           blok={blok}
           StoryblokComponent={StoryblokComponent}
-          context={props}
+          context={{
+            ...rootProps,
+            ...localProps,
+          }}
         />
       );
     };
 
-    return <StoryblokComponent blok={props.story.content} />;
+    return <StoryblokComponent blok={rootProps.story.content} />;
   };
 
   return StoryblokRoot;
