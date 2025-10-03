@@ -14,9 +14,9 @@ export const Header: FC<HeaderProps> = ({ start, end }) => (
       <div className="flex justify-center">
         <div className="flex items-center gap-2">
           <Image
-            src={logo.src}
-            width={logo.width}
-            height={logo.height}
+            src={logo.src || '/virgin-media-o2-logo.svg'}
+            width={logo.width || 200}
+            height={logo.height || 40}
             alt="Virgin Media O2 Logo"
             className="h-10 w-auto"
             priority
