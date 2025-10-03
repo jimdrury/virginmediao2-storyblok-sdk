@@ -2,14 +2,15 @@ import type { Metadata } from 'next';
 import { draftMode } from 'next/headers';
 import type { FC } from 'react';
 import { PreviewRoot, StoryblokRoot, StoryblokToolbar } from '@/storyblok';
+import { getAllLinks } from '@/storyblok/utils/get-all-links';
 import { getStory } from '@/storyblok/utils/get-story';
 
-// export const generateStaticParams = async () => {
-//   const links = await getAllLinks();
-//   return links.map((link) => ({
-//     page: link.real_path.split('/').filter(Boolean),
-//   }));
-// };
+export const generateStaticParams = async () => {
+  const links = await getAllLinks();
+  return links.map((link) => ({
+    page: link.real_path.split('/').filter(Boolean),
+  }));
+};
 
 interface PageProps {
   params: Promise<{ page: string[] }>;
