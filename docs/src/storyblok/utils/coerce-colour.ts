@@ -11,8 +11,6 @@ export type Colors =
 
 export const coerceTextColor = (color: Colors) => {
   switch (color) {
-    case 'default':
-      return 'text-default';
     case 'neutral':
       return 'text-neutral';
     case 'primary':
@@ -29,13 +27,13 @@ export const coerceTextColor = (color: Colors) => {
       return 'text-info';
     case 'error':
       return 'text-error';
+    default:
+      return 'text-default';
   }
 };
 
 export const coerceBgColor = (color: Colors) => {
   switch (color) {
-    case 'default':
-      return 'bg-default';
     case 'neutral':
       return 'bg-neutral';
     case 'primary':
@@ -52,5 +50,7 @@ export const coerceBgColor = (color: Colors) => {
       return 'bg-info';
     case 'error':
       return 'bg-error';
+    default:
+      return 'bg-default';
   }
 };

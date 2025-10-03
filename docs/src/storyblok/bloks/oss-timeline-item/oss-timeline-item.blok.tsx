@@ -8,6 +8,7 @@ import { type Colors, coerceBgColor } from '@/storyblok/utils/coerce-colour';
 interface OssTimelineItemContext {
   timelineFirst: boolean;
   timelineLast: boolean;
+  timelinePrevColor: Colors;
 }
 
 export type OssTimelineItemBlok = BlokType<OSS_BLOK.TIMELINE_ITEM> & {
@@ -21,11 +22,17 @@ export const OssTimelineItem: BC<
   OssTimelineItemContext
 > = ({
   blok: { title, content, line_color, ...blok },
-  context: { timelineFirst, timelineLast },
+  context: {
+    timelineFirst = false,
+    timelineLast = false,
+    timelinePrevColor = 'default',
+  },
   StoryblokComponent,
 }) => (
   <li className="mr-2" {...storyblokEditable(blok)}>
-    {!timelineFirst && <hr className={coerceBgColor(line_color)} aria-hidden />}
+    {!timelineFirst && (
+      <hr className={coerceBgColor(timelinePrevColor)} aria-hidden />
+    )}
     <div className="timeline-middle ">
       <FaDotCircle size={24} />
     </div>
