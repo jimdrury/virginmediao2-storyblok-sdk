@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import { draftMode } from 'next/headers';
-import type { FC } from 'react';
-import { PreviewRoot, StoryblokRoot, StoryblokToolbar } from '@/storyblok';
+import { type FC, Suspense } from 'react';
 import { getAllLinks } from '@/storyblok/utils/get-all-links';
 import { getStory } from '@/storyblok/utils/get-story';
+import { PageBuilder } from './_components/page-builder';
+import { PageSkeleton } from './_components/page-skeleton';
 
 export const generateStaticParams = async () => {
   const links = await getAllLinks();
@@ -14,18 +14,12 @@ export const generateStaticParams = async () => {
 
 interface PageProps {
   params: Promise<{ page: string[] }>;
-  searchParams: Promise<
-    Partial<{
-      '_storyblok_tk[timestamp]': string;
-      _storyblok_release: string;
-    }>
-  >;
 }
 
 export const generateMetadata = async (props: PageProps): Promise<Metadata> => {
   const params = await props.params;
   const slug = params.page.join('/');
-  const story = await getStory(slug);
+  const story = await getStory(slug).catch(() => null);
 
   if (!story) {
     return {};
@@ -36,42 +30,11 @@ export const generateMetadata = async (props: PageProps): Promise<Metadata> => {
   };
 };
 
-const Page: FC<PageProps> = async (props) => {
-  const params = await props.params;
-  const draft = await draftMode();
-  const slug = params.page.join('/');
-
-  if (draft.isEnabled) {
-    const searchParams = await props.searchParams;
-
-    const cv = Number(searchParams['_storyblok_tk[timestamp]'] || 0);
-    const from_release = Number(searchParams._storyblok_release || 0);
-
-    const story = await getStory(slug, {
-      version: 'draft',
-      cv,
-      from_release,
-    });
-
-    return (
-      <>
-        <StoryblokToolbar />
-        <PreviewRoot
-          story={story}
-          cv={cv}
-          from_release={from_release}
-          version="draft"
-        />
-      </>
-    );
-  }
-
-  const story = await getStory(slug);
+const Page: FC<PageProps> = async ({ params }) => {
   return (
-    <>
-      <StoryblokToolbar />
-      <StoryblokRoot story={story} version="published" />
-    </>
+    <Suspense fallback={<PageSkeleton />}>
+      <PageBuilder params={params} />
+    </Suspense>
   );
 };
 

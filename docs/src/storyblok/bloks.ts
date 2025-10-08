@@ -1,5 +1,6 @@
 export enum OSS_BLOK {
   PAGE = 'oss-page',
+  PAGE_WITH_NAVIGATION = 'oss-page-with-navigation',
   SNIPPET = 'oss-snippet',
   TABS = 'oss-tabs',
   TAB = 'oss-tab',
@@ -7,4 +8,9 @@ export enum OSS_BLOK {
   TIMELINE = 'oss-timeline',
   TIMELINE_ITEM = 'oss-timeline-item',
   DIVIDER = 'oss-divider',
+  CALLOUT = 'oss-callout',
+  OBJECT_PARAM = 'oss-object-param',
+  OBJECT_PARAM_OPTION = 'oss-object-param-option',
+  TILE_GRID = 'oss-tile-grid',
+  TILE = 'oss-tile',
 }

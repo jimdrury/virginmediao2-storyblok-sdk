@@ -21,7 +21,7 @@ export const StoryblokLogo: FC<StoryblokLogoProps> = ({ className }) => (
   >
     <style type="text/css">
       {`
-        .st0{clip-path:url(#SVGID_2_);fill:#FFFFFF;}
+        .st0{clip-path:url(#SVGID_2_);fill:transparent;}
         .st1{clip-path:url(#SVGID_4_);fill:currentColor;}
         .st2{clip-path:url(#SVGID_6_);fill:currentColor;}
       `}

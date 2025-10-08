@@ -1,19 +1,7 @@
-import type {
-  AxiosInstance,
-  AxiosResponse,
-  InternalAxiosRequestConfig,
-} from 'axios';
-import {
-  addParamIfNotPresent,
-  isStoryblokCdnResponse,
-  standardErrorHandler,
-} from './shared-utils';
+import type { AxiosInstance, AxiosResponse } from 'axios';
+import { isStoryblokCdnResponse, standardErrorHandler } from './shared-utils';
 
 export interface StoryblokCdnConfigOptions {
-  /**
-   * Access token for Storyblok CDN API (required)
-   */
-  accessToken: string;
   /**
    * Custom domain to replace a.storyblok.com for assets (optional)
    * When provided, enables automatic asset URL replacement
@@ -32,56 +20,52 @@ export interface StoryblokCdnConfigOptions {
 /**
  * Factory function that creates a unified Storyblok CDN configuration middleware
  *
- * This middleware combines CDN authentication and asset domain replacement functionality:
- * - Always adds the access token to all requests as a query parameter
- * - Optionally replaces a.storyblok.com asset URLs with a custom domain (when assetDomain is provided)
+ * This middleware provides asset domain replacement functionality:
+ * - Optionally adds the access token to requests (deprecated - pass to StoryblokSdk constructor instead)
+ * - Replaces a.storyblok.com asset URLs with a custom domain (when assetDomain is provided)
  * - Optionally filters URLs based on space IDs (when allowedSpaceIds is provided with assetDomain)
  *
  * @param config - Configuration for the CDN middleware
- * @param config.accessToken - Required access token for authentication
+ * @param config.accessToken - Optional access token for authentication (deprecated - use StoryblokSdk constructor)
  * @param config.assetDomain - Optional custom domain for assets
  * @param config.allowedSpaceIds - Optional array of allowed space IDs (requires assetDomain)
  * @returns A middleware function that can be applied to an AxiosInstance
  *
  * @example
  * ```typescript
- * import { storyblokCdnConfig } from "@virginmediao2/storyblok-sdk";
+ * import { StoryblokSdk, storyblokCdnConfig } from "@virginmediao2/storyblok-sdk";
  *
- * // Basic usage - authentication only
- * const basicMiddleware = storyblokCdnConfig({
- *   accessToken: "your-access-token"
- * });
- *
- * // With custom asset domain
- * const assetMiddleware = storyblokCdnConfig({
+ * // Recommended: Pass access token to SDK constructor
+ * const sdk = new StoryblokSdk({
  *   accessToken: "your-access-token",
- *   assetDomain: "https://assets.example.com"
+ *   middlewares: [
+ *     storyblokCdnConfig({
+ *       assetDomain: "https://assets.example.com"
+ *     })
+ *   ]
  * });
  *
  * // Multi-tenant with space filtering
- * const multiTenantMiddleware = storyblokCdnConfig({
+ * const multiTenantSdk = new StoryblokSdk({
  *   accessToken: "your-access-token",
- *   assetDomain: "https://cdn.myapp.com",
- *   allowedSpaceIds: ["329767", "123456"]
+ *   middlewares: [
+ *     storyblokCdnConfig({
+ *       assetDomain: "https://cdn.myapp.com",
+ *       allowedSpaceIds: ["329767", "123456"]
+ *     })
+ *   ]
  * });
  *
- * // Apply to axios instance
- * basicMiddleware(axiosInstance);
+ * // Legacy: Access token via middleware (deprecated)
+ * const legacyMiddleware = storyblokCdnConfig({
+ *   accessToken: "your-access-token",
+ *   assetDomain: "https://assets.example.com"
+ * });
  * ```
  */
 export const storyblokCdnConfig =
   (config: StoryblokCdnConfigOptions) =>
   (axiosInstance: AxiosInstance): void => {
-    // Add request interceptor for authentication
-    axiosInstance.interceptors.request.use(
-      (requestConfig: InternalAxiosRequestConfig) => {
-        // Add access token if not already present
-        addParamIfNotPresent(requestConfig, 'token', config.accessToken);
-        return requestConfig;
-      },
-      standardErrorHandler,
-    );
-
     // Add response interceptor for asset domain replacement (if configured)
     if (config.assetDomain) {
       const assetDomain = config.assetDomain; // Type guard for closure

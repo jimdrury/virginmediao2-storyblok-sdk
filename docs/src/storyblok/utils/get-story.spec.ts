@@ -8,6 +8,11 @@ vi.mock('..', () => ({
   },
 }));
 
+// Mock next cache
+vi.mock('next/dist/server/use-cache/cache-life', () => ({
+  cacheLife: vi.fn(),
+}));
+
 describe('getStory', () => {
   beforeEach(() => {
     vi.clearAllMocks();

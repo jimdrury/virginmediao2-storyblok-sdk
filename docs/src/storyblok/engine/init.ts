@@ -1,6 +1,8 @@
+import { initDraftMode } from './draft-mode';
 import type { StoryblokEngineProps } from './engine.interface';
 import { initPreviewRoot } from './preview';
 import { initStoryblokRoot } from './render';
+import { initRouteHandler } from './route-handler';
 import { initStoryblokToolbar } from './toolbar';
 
 declare global {
@@ -11,4 +13,6 @@ export const initStoryblokEngine = (props: StoryblokEngineProps) => ({
   StoryblokRoot: initStoryblokRoot(props),
   PreviewRoot: initPreviewRoot(props),
   StoryblokToolbar: initStoryblokToolbar(props),
+  draftMode: initDraftMode(),
+  routeHandler: initRouteHandler(),
 });

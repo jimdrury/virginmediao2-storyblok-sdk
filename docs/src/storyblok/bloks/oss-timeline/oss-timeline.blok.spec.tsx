@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { OSS_BLOK } from '@/storyblok/bloks';
 import { OssTimeline, type OssTimelineBlok } from './oss-timeline.blok';
 
 // Mock storyblokEditable
@@ -17,18 +18,18 @@ describe('OssTimeline', () => {
 
   const mockBlok: OssTimelineBlok = {
     _uid: 'timeline-uid',
-    component: 'oss-timeline',
+    component: OSS_BLOK.TIMELINE,
     snap_icon: true,
     content: [
       {
         _uid: 'item-1',
-        component: 'oss-timeline-item',
+        component: OSS_BLOK.TIMELINE_ITEM,
         title: 'Item 1',
         line_color: 'primary',
       },
       {
         _uid: 'item-2',
-        component: 'oss-timeline-item',
+        component: OSS_BLOK.TIMELINE_ITEM,
         title: 'Item 2',
         line_color: 'secondary',
       },
@@ -132,7 +133,7 @@ describe('OssTimeline', () => {
   it('handles empty content array', () => {
     const emptyBlok: OssTimelineBlok = {
       _uid: 'timeline-uid',
-      component: 'oss-timeline',
+      component: OSS_BLOK.TIMELINE,
       snap_icon: false,
       content: [],
     };

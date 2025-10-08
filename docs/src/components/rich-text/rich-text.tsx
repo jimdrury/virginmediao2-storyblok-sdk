@@ -152,6 +152,7 @@ const options: RenderOptions = {
           </Link>
         );
       }
+
       return <NextLink href={href}>{children}</NextLink>;
     },
     [MARK_SUBSCRIPT]: (children) => <Subscript>{children}</Subscript>,

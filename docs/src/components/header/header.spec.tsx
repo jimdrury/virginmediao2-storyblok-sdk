@@ -33,7 +33,7 @@ describe('Header', () => {
   it('applies correct CSS classes', () => {
     const { container } = render(<Header />);
     const header = container.querySelector('header');
-    expect(header).toHaveClass('shadow-md', 'px-2', 'py-4', 'bg-white');
+    expect(header).toHaveClass('shadow-sm', 'px-2', 'py-4', 'bg-white');
   });
 
   it('renders without start and end props', () => {

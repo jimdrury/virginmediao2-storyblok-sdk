@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { OSS_BLOK } from '@/storyblok/bloks';
 import { OssTabs, type OssTabsBlok } from './oss-tabs.blok';
 
 // Mock components
@@ -48,19 +49,19 @@ describe('OssTabs', () => {
 
   const mockBlok: OssTabsBlok = {
     _uid: 'tabs-uid',
-    component: 'oss-tabs',
+    component: OSS_BLOK.TABS,
     label: 'Test Tabs',
     variant: 'border',
     tabs: [
       {
         _uid: 'tab-1',
-        component: 'oss-tab',
+        component: OSS_BLOK.TAB,
         title: 'Tab 1',
         content: [],
       },
       {
         _uid: 'tab-2',
-        component: 'oss-tab',
+        component: OSS_BLOK.TAB,
         title: 'Tab 2',
         content: [],
       },

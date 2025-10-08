@@ -1,4 +1,7 @@
-import axios, { type AxiosInstance } from 'axios';
+import axios, {
+  type AxiosInstance,
+  type InternalAxiosRequestConfig,
+} from 'axios';
 import type {
   BaseStoryblokOptions,
   BlokType,
@@ -39,11 +42,36 @@ import { fetchAllPaginated } from './utils';
 export class StoryblokSdk {
   public axiosInstance: AxiosInstance;
   private baseURL: string;
+  private accessToken: string;
+
+  accessTokenMiddleware() {
+    // Add access token to all requests
+    this.axiosInstance.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        // Initialize params if not present
+        if (!config.params) {
+          config.params = {};
+        }
+
+        // Add access token if not already present
+        if (!config.params.token) {
+          config.params = {
+            ...config.params,
+            token: this.accessToken,
+          };
+        }
+
+        return config;
+      },
+      (error) => Promise.reject(error),
+    );
+  }
 
   /**
    * Creates a new Storyblok SDK instance
    *
    * @param options - Configuration options for the SDK
+   * @param options.accessToken - Access token for Storyblok CDN API (required)
    * @param options.baseURL - Base URL for the Storyblok API (defaults to 'https://api.storyblok.com/v2')
    * @param options.timeout - Request timeout in milliseconds (defaults to 10000)
    *
@@ -61,6 +89,7 @@ export class StoryblokSdk {
    * ```
    */
   constructor(options: BaseStoryblokOptions) {
+    this.accessToken = options.accessToken;
     this.baseURL = options.baseURL || 'https://api.storyblok.com/v2/cdn/';
 
     // Create axios instance with default configuration
@@ -72,6 +101,8 @@ export class StoryblokSdk {
         'Content-Type': 'application/json',
       },
     });
+
+    this.accessTokenMiddleware();
 
     options.middlewares?.forEach((middleware) => {
       middleware(this.axiosInstance);
@@ -130,7 +161,7 @@ export class StoryblokSdk {
    * @see https://www.storyblok.com/docs/api/content-delivery/v2/getting-started/pagination
    */
   async getAllStories<T extends BlokType = BlokType>(
-    params?: Omit<GetStoriesParams, 'page' | 'per_page'>,
+    params: Omit<GetStoriesParams, 'page' | 'per_page'>,
     options?: {
       perPage?: number;
       maxPages?: number;
@@ -168,118 +199,6 @@ export class StoryblokSdk {
       {
         params,
       },
-    );
-  }
-
-  /**
-   * Get stories by tag
-   */
-  async getStoriesByTag<T extends BlokType = BlokType>(
-    tag: string,
-    params?: Omit<GetStoriesParams, 'filter_query'>,
-  ) {
-    return this.getStories<T>({
-      ...params,
-      filter_query: {
-        ...(params?.filter_query || {}),
-        tag_list: {
-          in: tag,
-        },
-      },
-    });
-  }
-
-  /**
-   * Get all stories by tag with automatic pagination
-   */
-  async getAllStoriesByTag<T extends BlokType = BlokType>(
-    tag: string,
-    params?: Omit<GetStoriesParams, 'filter_query' | 'page' | 'per_page'>,
-    options?: {
-      perPage?: number;
-      maxPages?: number;
-      onProgress?: (page: number, totalFetched: number, total?: number) => void;
-    },
-  ) {
-    return this.getAllStories<T>(
-      {
-        ...params,
-        filter_query: {
-          ...(params?.filter_query || {}),
-          tag_list: {
-            in: tag,
-          },
-        },
-      },
-      options,
-    );
-  }
-
-  /**
-   * Get stories that start with a specific path
-   */
-  async getStoriesByPath<T extends BlokType = BlokType>(
-    path: string,
-    params?: Omit<GetStoriesParams, 'starts_with'>,
-  ) {
-    return this.getStories<T>({
-      ...params,
-      starts_with: path,
-    });
-  }
-
-  /**
-   * Get all stories by path with automatic pagination
-   */
-  async getAllStoriesByPath<T extends BlokType = BlokType>(
-    path: string,
-    params?: Omit<GetStoriesParams, 'starts_with' | 'page' | 'per_page'>,
-    options?: {
-      perPage?: number;
-      maxPages?: number;
-      onProgress?: (page: number, totalFetched: number, total?: number) => void;
-    },
-  ) {
-    return this.getAllStories<T>(
-      {
-        ...params,
-        starts_with: path,
-      },
-      options,
-    );
-  }
-
-  /**
-   * Search stories by term
-   */
-  async searchStories<T extends BlokType = BlokType>(
-    searchTerm: string,
-    params?: Omit<GetStoriesParams, 'search_term'>,
-  ) {
-    return this.getStories<T>({
-      ...params,
-      search_term: searchTerm,
-    });
-  }
-
-  /**
-   * Search all stories by term with automatic pagination
-   */
-  async searchAllStories<T extends BlokType = BlokType>(
-    searchTerm: string,
-    params?: Omit<GetStoriesParams, 'search_term' | 'page' | 'per_page'>,
-    options?: {
-      perPage?: number;
-      maxPages?: number;
-      onProgress?: (page: number, totalFetched: number, total?: number) => void;
-    },
-  ) {
-    return this.getAllStories<T>(
-      {
-        ...params,
-        search_term: searchTerm,
-      },
-      options,
     );
   }
 

@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { OSS_BLOK } from '@/storyblok/bloks';
 import { OssSnippet, type OssSnippetBlok } from './oss-snippet.blok';
 
 // Mock CodeSnippet component
@@ -35,7 +36,7 @@ vi.mock('@/storyblok/engine', () => ({
 describe('OssSnippet', () => {
   const mockBlok: OssSnippetBlok = {
     _uid: 'snippet-uid',
-    component: 'oss-snippet',
+    component: OSS_BLOK.SNIPPET,
     code: {
       code: 'console.log("Hello, World!");',
       title: 'Example Code',
@@ -58,7 +59,7 @@ describe('OssSnippet', () => {
   it('renders without optional props', () => {
     const blokWithoutOptional: OssSnippetBlok = {
       _uid: 'snippet-uid',
-      component: 'oss-snippet',
+      component: OSS_BLOK.SNIPPET,
       code: {
         code: 'const x = 1;',
       },

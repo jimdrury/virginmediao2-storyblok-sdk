@@ -1,10 +1,11 @@
 'use client';
+import clsx from 'clsx';
 import type { FC } from 'react';
-import { PreviewButton } from './preview-button';
+import { StoryblokLogo } from './storyblok-logo';
 
 interface StoryblokToolbarProps {
   handlerPath: string;
-  draftMode: boolean;
+  draftMode: boolean | { cv: number; release: number };
 }
 
 export const StoryblokToolbar: FC<StoryblokToolbarProps> = ({
@@ -12,16 +13,31 @@ export const StoryblokToolbar: FC<StoryblokToolbarProps> = ({
   draftMode,
 }) => {
   return (
-    <div className="fixed bottom-[20px] right-[20px] z-50">
-      {draftMode === false && (
-        <PreviewButton href={`${handlerPath}/draft/enable`} enabled>
-          Edit Mode
-        </PreviewButton>
+    <div className="fab">
+      <button
+        type="button"
+        className={clsx({
+          btn: true,
+          'btn-lg': true,
+          'btn-circle': true,
+          'border-2': true,
+          'border-neutral-content': draftMode,
+          'btn-neutral': draftMode,
+          'text-neutral-content': draftMode,
+        })}
+      >
+        <StoryblokLogo className={'h-[20px]'} />
+      </button>
+
+      {!draftMode && (
+        <a className="btn rounded-full" href={`${handlerPath}/draft/enable/`}>
+          Enable draft mode
+        </a>
       )}
-      {draftMode === true && (
-        <PreviewButton href={`${handlerPath}/draft/disable`}>
-          Exit Edit Mode
-        </PreviewButton>
+      {draftMode && (
+        <a className="btn rounded-full" href={`${handlerPath}/draft/disable/`}>
+          Exit draft mode
+        </a>
       )}
     </div>
   );

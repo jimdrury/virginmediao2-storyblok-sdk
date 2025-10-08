@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { OSS_BLOK } from '@/storyblok/bloks';
 import { OssTab, type OssTabBlok } from './oss-tab.blok';
 
 // Mock TabPanel component
@@ -32,16 +33,16 @@ describe('OssTab', () => {
 
   const mockBlok: OssTabBlok = {
     _uid: 'tab-uid',
-    component: 'oss-tab',
+    component: OSS_BLOK.TAB,
     title: 'Tab Title',
     content: [
       {
         _uid: 'content-1',
-        component: 'oss-text',
+        component: OSS_BLOK.TEXT,
       },
       {
         _uid: 'content-2',
-        component: 'oss-snippet',
+        component: OSS_BLOK.SNIPPET,
       },
     ],
   };
@@ -81,7 +82,7 @@ describe('OssTab', () => {
   it('renders empty content array', () => {
     const emptyBlok: OssTabBlok = {
       _uid: 'tab-uid',
-      component: 'oss-tab',
+      component: OSS_BLOK.TAB,
       title: 'Tab Title',
       content: [],
     };

@@ -43,20 +43,15 @@ describe('storyblokCdnConfig', () => {
       expect(typeof middleware).toBe('function');
     });
 
-    it('should apply request interceptor for authentication', () => {
-      const config = { accessToken: 'test-token' };
+    it('should create a middleware function without accessToken', () => {
+      const config = { assetDomain: 'https://assets.example.com' as const };
       const middleware = storyblokCdnConfig(config);
 
-      middleware(mockAxiosInstance);
-
-      expect(mockAxiosInstance.interceptors.request.use).toHaveBeenCalledWith(
-        expect.any(Function),
-        expect.any(Function),
-      );
+      expect(typeof middleware).toBe('function');
     });
 
     it('should not apply response interceptor when assetDomain is not provided', () => {
-      const config = { accessToken: 'test-token' };
+      const config = {};
       const middleware = storyblokCdnConfig(config);
 
       middleware(mockAxiosInstance);
@@ -68,7 +63,6 @@ describe('storyblokCdnConfig', () => {
 
     it('should apply response interceptor when assetDomain is provided', () => {
       const config = {
-        accessToken: 'test-token',
         assetDomain: 'https://assets.example.com' as const,
       };
       const middleware = storyblokCdnConfig(config);
@@ -82,93 +76,9 @@ describe('storyblokCdnConfig', () => {
     });
   });
 
-  describe('authentication functionality', () => {
-    beforeEach(() => {
-      const config = { accessToken: 'test-token' };
-      const middleware = storyblokCdnConfig(config);
-      middleware(mockAxiosInstance);
-    });
-
-    it('should add token to request params when params is undefined', () => {
-      const requestConfig: InternalAxiosRequestConfig = {
-        url: '/stories',
-        headers: new AxiosHeaders(),
-      };
-
-      const result = requestInterceptor(requestConfig);
-
-      expect(result.params).toEqual({ token: 'test-token' });
-    });
-
-    it('should add token to existing params', () => {
-      const requestConfig: InternalAxiosRequestConfig = {
-        url: '/stories',
-        params: { page: 1 },
-        headers: new AxiosHeaders(),
-      };
-
-      const result = requestInterceptor(requestConfig);
-
-      expect(result.params).toEqual({
-        page: 1,
-        token: 'test-token',
-      });
-    });
-
-    it('should not override existing token', () => {
-      const requestConfig: InternalAxiosRequestConfig = {
-        url: '/stories',
-        params: { token: 'existing-token' },
-        headers: new AxiosHeaders(),
-      };
-
-      const result = requestInterceptor(requestConfig);
-
-      expect(result.params).toEqual({ token: 'existing-token' });
-    });
-
-    it('should handle null params', () => {
-      const requestConfig: InternalAxiosRequestConfig = {
-        url: '/stories',
-        params: null,
-        headers: new AxiosHeaders(),
-      };
-
-      const result = requestInterceptor(requestConfig);
-
-      expect(result.params).toEqual({ token: 'test-token' });
-    });
-
-    it('should handle complex nested params', () => {
-      const requestConfig: InternalAxiosRequestConfig = {
-        url: '/stories',
-        params: {
-          filter_query: {
-            component: { is: 'blog_post' },
-            published: { is: true },
-          },
-          sort_by: 'created_at',
-        },
-        headers: new AxiosHeaders(),
-      };
-
-      const result = requestInterceptor(requestConfig);
-
-      expect(result.params).toEqual({
-        filter_query: {
-          component: { is: 'blog_post' },
-          published: { is: true },
-        },
-        sort_by: 'created_at',
-        token: 'test-token',
-      });
-    });
-  });
-
   describe('asset domain replacement functionality', () => {
     beforeEach(() => {
       const config = {
-        accessToken: 'test-token',
         assetDomain: 'https://assets.example.com' as const,
       };
       const middleware = storyblokCdnConfig(config);
@@ -448,22 +358,8 @@ describe('storyblokCdnConfig', () => {
   });
 
   describe('error handling', () => {
-    it('should handle request interceptor errors', () => {
-      const config = { accessToken: 'test-token' };
-      const middleware = storyblokCdnConfig(config);
-      middleware(mockAxiosInstance);
-
-      const errorHandler = (
-        mockAxiosInstance.interceptors.request.use as ReturnType<typeof vi.fn>
-      ).mock.calls[0][1];
-      const testError = new Error('Test error');
-
-      return expect(errorHandler(testError)).rejects.toThrow('Test error');
-    });
-
     it('should handle response interceptor errors when assetDomain is provided', () => {
       const config = {
-        accessToken: 'test-token',
         assetDomain: 'https://assets.example.com' as const,
       };
       const middleware = storyblokCdnConfig(config);
@@ -479,7 +375,6 @@ describe('storyblokCdnConfig', () => {
 
     it('should handle malformed response data gracefully', () => {
       const config = {
-        accessToken: 'test-token',
         assetDomain: 'https://assets.example.com' as const,
       };
       const middleware = storyblokCdnConfig(config);
@@ -503,7 +398,6 @@ describe('storyblokCdnConfig', () => {
 
     it('should handle circular references gracefully', () => {
       const config = {
-        accessToken: 'test-token',
         assetDomain: 'https://assets.example.com' as const,
       };
       const middleware = storyblokCdnConfig(config);
@@ -532,24 +426,8 @@ describe('storyblokCdnConfig', () => {
   });
 
   describe('integration scenarios', () => {
-    it('should work with different access tokens', () => {
-      const config = { accessToken: 'different-token-123' };
-      const middleware = storyblokCdnConfig(config);
-      middleware(mockAxiosInstance);
-
-      const requestConfig: InternalAxiosRequestConfig = {
-        url: '/stories',
-        headers: new AxiosHeaders(),
-      };
-
-      const result = requestInterceptor(requestConfig);
-
-      expect(result.params).toEqual({ token: 'different-token-123' });
-    });
-
     it('should work with different asset domains', () => {
       const config = {
-        accessToken: 'test-token',
         assetDomain: 'https://cdn.mycompany.com' as const,
       };
       const middleware = storyblokCdnConfig(config);
@@ -579,27 +457,8 @@ describe('storyblokCdnConfig', () => {
       );
     });
 
-    it('should be idempotent when applied multiple times', () => {
-      const config = { accessToken: 'test-token' };
-      const middleware = storyblokCdnConfig(config);
-
-      middleware(mockAxiosInstance);
-      middleware(mockAxiosInstance);
-      middleware(mockAxiosInstance);
-
-      const requestConfig: InternalAxiosRequestConfig = {
-        url: '/stories',
-        headers: new AxiosHeaders(),
-      };
-
-      const result = requestInterceptor(requestConfig);
-
-      expect(result.params).toEqual({ token: 'test-token' });
-    });
-
     it('should handle nested asset objects in complex structures', () => {
       const config = {
-        accessToken: 'test-token',
         assetDomain: 'https://assets.example.com' as const,
       };
       const middleware = storyblokCdnConfig(config);
@@ -655,7 +514,6 @@ describe('storyblokCdnConfig', () => {
 
     it('should handle non-asset URLs that contain a.storyblok.com', () => {
       const config = {
-        accessToken: 'test-token',
         assetDomain: 'https://assets.example.com' as const,
       };
       const middleware = storyblokCdnConfig(config);
@@ -693,7 +551,6 @@ describe('storyblokCdnConfig', () => {
 
     it('should handle URLs without protocol', () => {
       const config = {
-        accessToken: 'test-token',
         assetDomain: 'https://assets.example.com' as const,
       };
       const middleware = storyblokCdnConfig(config);
@@ -733,7 +590,6 @@ describe('storyblokCdnConfig', () => {
 
     it('should handle empty and null values in response data', () => {
       const config = {
-        accessToken: 'test-token',
         assetDomain: 'https://assets.example.com' as const,
       };
       const middleware = storyblokCdnConfig(config);

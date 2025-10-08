@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { OSS_BLOK } from '@/storyblok/bloks';
 import { OssPage, type OssPageBlok } from './oss-page.blok';
 
 // Mock StoryblokComponent
@@ -14,15 +15,15 @@ describe('OssPage', () => {
 
   const mockBlok: OssPageBlok = {
     _uid: 'page-uid',
-    component: 'oss-page',
+    component: OSS_BLOK.PAGE,
     content: [
       {
         _uid: 'blok-1',
-        component: 'oss-text',
+        component: OSS_BLOK.TEXT,
       },
       {
         _uid: 'blok-2',
-        component: 'oss-tabs',
+        component: OSS_BLOK.TABS,
       },
     ],
   };
@@ -61,7 +62,7 @@ describe('OssPage', () => {
   it('renders empty content array', () => {
     const emptyBlok: OssPageBlok = {
       _uid: 'page-uid',
-      component: 'oss-page',
+      component: OSS_BLOK.PAGE,
       content: [],
     };
 

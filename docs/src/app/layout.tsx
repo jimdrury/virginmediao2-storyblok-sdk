@@ -5,6 +5,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Footer } from '@/components/footer';
 import { Header } from '@/components/header';
+import { StoryblokToolbar } from '@/storyblok';
 
 export const metadata: Metadata = {
   title: {
@@ -33,8 +34,9 @@ const RootLayout: FC<RootLayoutProps> = ({ children }) => {
         className={`${onAir.className} flex flex-col min-h-screen antialiased`}
       >
         <Header />
-        <main className="flex-grow">{children}</main>
+        <main className="flex-grow px-2 py-8 md:px-6 md:py-10">{children}</main>
         <Footer />
+        <StoryblokToolbar />
       </body>
     </html>
   );

@@ -13,8 +13,16 @@ export const initPreviewRoot = (config: StoryblokEngineProps) => {
     story,
     ...props
   }) => {
-    const render = await previewAction({ story, ...props });
-    return <PreviewClient {...props}>{render}</PreviewClient>;
+    const render = await previewAction({
+      story,
+      ...props,
+    });
+
+    return (
+      <PreviewClient handlerPath={config.handlerPath} {...props}>
+        {render}
+      </PreviewClient>
+    );
   };
 
   return PreviewRoot;

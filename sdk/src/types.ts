@@ -6,6 +6,10 @@ type AxiosMiddleware = (axiosInstance: AxiosInstance) => void;
 // Base interfaces for SDK configuration
 export interface BaseStoryblokOptions {
   /**
+   * Access token for Storyblok CDN API (required)
+   */
+  accessToken: string;
+  /**
    * Base URL for Storyblok API
    * @default 'https://api.storyblok.com/v2'
    */
@@ -157,11 +161,12 @@ export type StoryblokFilterQuery = Record<
 // Request parameter interfaces
 export interface GetStoriesParams {
   /**
-   * Filter by starts_with parameter
+   * Filter by starts_with parameter. Used to retrieve all stories in a specific folder.
+   * Example: starts_with=blog/posts
    */
   starts_with?: string;
   /**
-   * Include draft content
+   * Filter by is_startpage parameter
    */
   is_startpage?: boolean;
   /**
@@ -169,31 +174,32 @@ export interface GetStoriesParams {
    */
   filter_query?: StoryblokFilterQuery;
   /**
-   * Sort parameter
+   * Sort stories in ascending or descending order by a specific property.
+   * Examples: sort_by=created_at:desc, sort_by=content.price:asc:float
    */
   sort_by?: string;
   /**
-   * Search term
+   * Performs a full-text search by passing a search query
    */
   search_term?: string;
   /**
-   * Page number for pagination
+   * Page number for pagination. Default: 1
    */
   page?: number;
   /**
-   * Number of items per page
+   * Number of items per page. Default: 25. Max: 100
    */
   per_page?: number;
   /**
-   * Cache version
+   * Cache version (Unix timestamp)
    */
   cv?: number;
   /**
-   * Resolve relations
+   * Resolve relations to other stories. Example: ['blog.author', 'article.categories']
    */
-  resolve_relations?: `${string}:${string}`[];
+  resolve_relations?: `${string}.${string}`[];
   /**
-   * Resolve links
+   * Resolve links. Possible values: 'url', 'story'
    */
   resolve_links?: 'url' | 'story';
   /**
@@ -205,9 +211,86 @@ export interface GetStoriesParams {
    */
   fallback_lang?: string;
   /**
-   * Include draft versions
+   * Version to retrieve. Default: 'published'. Possible values: 'draft', 'published'
    */
   version?: 'draft' | 'published';
+  /**
+   * Retrieve stories by comma-separated full_slug. Supports wildcards with *.
+   * Examples: by_slugs=posts/my-first-post,posts/my-second-post or by_slugs=posts/*
+   */
+  by_slugs?: string;
+  /**
+   * Exclude stories by comma-separated full_slug. Supports wildcards with *.
+   * Examples: excluding_slugs=posts/my-third-post or excluding_slugs=posts/*
+   */
+  excluding_slugs?: string;
+  /**
+   * Retrieve stories published after the specified date (Format: yyyy-MM-dd HH:mm)
+   */
+  published_at_gt?: string;
+  /**
+   * Retrieve stories published before the specified date (Format: yyyy-MM-dd HH:mm)
+   */
+  published_at_lt?: string;
+  /**
+   * Retrieve stories first published after the specified date (Format: yyyy-MM-dd HH:mm)
+   */
+  first_published_at_gt?: string;
+  /**
+   * Retrieve stories first published before the specified date (Format: yyyy-MM-dd HH:mm)
+   */
+  first_published_at_lt?: string;
+  /**
+   * Retrieve stories updated after the specified date (Format: yyyy-MM-dd HH:mm)
+   */
+  updated_at_gt?: string;
+  /**
+   * Retrieve stories updated before the specified date (Format: yyyy-MM-dd HH:mm)
+   */
+  updated_at_lt?: string;
+  /**
+   * Retrieve stories in specific workflow stages (comma-separated workflow stage IDs).
+   * Example: in_workflow_stages=325604,325605
+   */
+  in_workflow_stages?: string;
+  /**
+   * Retrieve stories of a specific content type.
+   * Example: content_type=page
+   */
+  content_type?: string;
+  /**
+   * Retrieve stories located in the specified folder level.
+   * Example: level=1 (root folder), level=2 (top-level folders)
+   */
+  level?: number;
+  /**
+   * Retrieve stories from a specific release
+   */
+  from_release?: string | number;
+  /**
+   * Filter by tag. Example: with_tag=featured
+   */
+  with_tag?: string;
+  /**
+   * Exclude specific fields from the response (comma-separated).
+   * Example: excluding_fields=content.body,content.image
+   */
+  excluding_fields?: string;
+  /**
+   * Exclude stories by ID (comma-separated story IDs).
+   * Example: excluding_ids=123,456,789
+   */
+  excluding_ids?: string;
+  /**
+   * Retrieve stories by UUID (comma-separated UUIDs).
+   * Example: by_uuids=uuid1,uuid2,uuid3
+   */
+  by_uuids?: string;
+  /**
+   * Retrieve stories by UUID in the specified order (comma-separated UUIDs).
+   * Example: by_uuids_ordered=uuid1,uuid2,uuid3
+   */
+  by_uuids_ordered?: string;
   /**
    * Additional query parameters
    */
@@ -215,6 +298,10 @@ export interface GetStoriesParams {
 }
 
 export interface GetStoryParams {
+  /**
+   * Access token for Storyblok CDN API (required)
+   */
+  token?: string;
   /**
    * Cache version
    */
@@ -224,15 +311,21 @@ export interface GetStoryParams {
    */
   from_release?: number;
   /**
-   */
-  /**
    * Resolve relations
    */
-  resolve_relations?: string | string[];
+  resolve_relations?: `${string}.${string}`[];
+  /**
+   * Resolve level
+   */
+  resolve_relations_level?: 2;
   /**
    * Resolve links
    */
-  resolve_links?: string;
+  resolve_links?: 'link' | 'url' | 'story';
+  /**
+   * Resolve links level
+   */
+  resolve_links_level?: 1 | 2;
   /**
    * Language code
    */
