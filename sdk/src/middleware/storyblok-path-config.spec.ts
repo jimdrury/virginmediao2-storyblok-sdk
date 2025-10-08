@@ -37,14 +37,14 @@ describe('storyblokPathConfig', () => {
 
   describe('middleware creation', () => {
     it('should create a middleware function', () => {
-      const config = { basePath: 'blog/' as const };
+      const config = { folderPath: 'blog/' as const };
       const middleware = storyblokPathConfig(config);
 
       expect(typeof middleware).toBe('function');
     });
 
     it('should apply request interceptor', () => {
-      const config = { basePath: 'blog/' as const };
+      const config = { folderPath: 'blog/' as const };
       const middleware = storyblokPathConfig(config);
 
       middleware(mockAxiosInstance);
@@ -56,7 +56,7 @@ describe('storyblokPathConfig', () => {
     });
 
     it('should not apply response interceptor when rewriteLinks is false', () => {
-      const config = { basePath: 'blog/' as const };
+      const config = { folderPath: 'blog/' as const };
       const middleware = storyblokPathConfig(config);
 
       middleware(mockAxiosInstance);
@@ -67,7 +67,7 @@ describe('storyblokPathConfig', () => {
     });
 
     it('should apply response interceptor when rewriteLinks is true', () => {
-      const config = { basePath: 'blog/' as const, rewriteLinks: true };
+      const config = { folderPath: 'blog/' as const, rewriteLinks: true };
       const middleware = storyblokPathConfig(config);
 
       middleware(mockAxiosInstance);
@@ -81,7 +81,7 @@ describe('storyblokPathConfig', () => {
 
   describe('request interceptor - individual story requests', () => {
     beforeEach(() => {
-      const config = { basePath: 'blog/' as const };
+      const config = { folderPath: 'blog/' as const };
       const middleware = storyblokPathConfig(config);
       middleware(mockAxiosInstance);
     });
@@ -137,7 +137,7 @@ describe('storyblokPathConfig', () => {
     });
 
     it('should handle complex nested paths', () => {
-      const config = { basePath: 'en/blog/' as const };
+      const config = { folderPath: 'en/blog/' as const };
       const middleware = storyblokPathConfig(config);
       middleware(mockAxiosInstance);
 
@@ -155,7 +155,7 @@ describe('storyblokPathConfig', () => {
 
   describe('request interceptor - collection requests', () => {
     beforeEach(() => {
-      const config = { basePath: 'blog/' as const };
+      const config = { folderPath: 'blog/' as const };
       const middleware = storyblokPathConfig(config);
       middleware(mockAxiosInstance);
     });
@@ -217,7 +217,7 @@ describe('storyblokPathConfig', () => {
 
   describe('request interceptor - non-Storyblok requests', () => {
     beforeEach(() => {
-      const config = { basePath: 'blog/' as const };
+      const config = { folderPath: 'blog/' as const };
       const middleware = storyblokPathConfig(config);
       middleware(mockAxiosInstance);
     });
@@ -251,7 +251,7 @@ describe('storyblokPathConfig', () => {
 
   describe('response interceptor - link rewriting', () => {
     beforeEach(() => {
-      const config = { basePath: 'blog/' as const, rewriteLinks: true };
+      const config = { folderPath: 'blog/' as const, rewriteLinks: true };
       const middleware = storyblokPathConfig(config);
       middleware(mockAxiosInstance);
     });
@@ -755,19 +755,424 @@ describe('storyblokPathConfig', () => {
     });
   });
 
+  describe('response interceptor - htmlBasePath stripping', () => {
+    beforeEach(() => {
+      const config = {
+        folderPath: 'docs/' as const,
+        rewriteLinks: true,
+        htmlBasePath: 'my-app',
+      };
+      const middleware = storyblokPathConfig(config);
+      middleware(mockAxiosInstance);
+    });
+
+    it('should strip htmlBasePath from href in link objects', () => {
+      const response: AxiosResponse = {
+        data: {
+          story: {
+            id: 1,
+            uuid: 'test-uuid',
+            slug: 'docs/my-post',
+            full_slug: 'docs/my-post',
+            content: {
+              title: 'Test',
+              link: {
+                id: 'link-uuid',
+                url: '/my-app/page',
+                linktype: 'story',
+                fieldtype: 'multilink',
+                cached_url: '/my-app/page',
+                href: '/my-app/page',
+              },
+            },
+            alternates: [],
+            translated_slugs: [],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          url: '/stories/docs/my-post',
+          baseURL: 'https://api.storyblok.com/v2/cdn',
+          headers: new AxiosHeaders(),
+        },
+      };
+
+      const result = responseInterceptor(response);
+
+      expect(result.data.story.content.link.href).toBe('/page');
+      // Other fields should be unchanged
+      expect(result.data.story.content.link.url).toBe('/my-app/page');
+    });
+
+    it('should strip htmlBasePath with leading slash', () => {
+      const config = {
+        folderPath: 'docs/' as const,
+        rewriteLinks: true,
+        htmlBasePath: '/my-app',
+      };
+      const middleware = storyblokPathConfig(config);
+      middleware(mockAxiosInstance);
+
+      const response: AxiosResponse = {
+        data: {
+          story: {
+            id: 1,
+            uuid: 'test-uuid',
+            slug: 'docs/my-post',
+            full_slug: 'docs/my-post',
+            content: {
+              link: {
+                href: '/my-app/another-page',
+              },
+            },
+            alternates: [],
+            translated_slugs: [],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          url: '/stories/docs/my-post',
+          baseURL: 'https://api.storyblok.com/v2/cdn',
+          headers: new AxiosHeaders(),
+        },
+      };
+
+      const result = responseInterceptor(response);
+
+      expect(result.data.story.content.link.href).toBe('/another-page');
+    });
+
+    it('should strip htmlBasePath with trailing slash', () => {
+      const config = {
+        folderPath: 'docs/' as const,
+        rewriteLinks: true,
+        htmlBasePath: 'my-app/',
+      };
+      const middleware = storyblokPathConfig(config);
+      middleware(mockAxiosInstance);
+
+      const response: AxiosResponse = {
+        data: {
+          story: {
+            id: 1,
+            uuid: 'test-uuid',
+            slug: 'docs/my-post',
+            full_slug: 'docs/my-post',
+            content: {
+              link: {
+                href: '/my-app/page',
+              },
+            },
+            alternates: [],
+            translated_slugs: [],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          url: '/stories/docs/my-post',
+          baseURL: 'https://api.storyblok.com/v2/cdn',
+          headers: new AxiosHeaders(),
+        },
+      };
+
+      const result = responseInterceptor(response);
+
+      expect(result.data.story.content.link.href).toBe('/page');
+    });
+
+    it('should handle nested link objects with href', () => {
+      const response: AxiosResponse = {
+        data: {
+          story: {
+            id: 1,
+            uuid: 'test-uuid',
+            slug: 'docs/my-post',
+            full_slug: 'docs/my-post',
+            content: {
+              sections: [
+                {
+                  component: 'section',
+                  link: {
+                    href: '/my-app/nested/page',
+                  },
+                  nested: {
+                    deep_link: {
+                      href: '/my-app/deep/page',
+                    },
+                  },
+                },
+              ],
+            },
+            alternates: [],
+            translated_slugs: [],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          url: '/stories/docs/my-post',
+          baseURL: 'https://api.storyblok.com/v2/cdn',
+          headers: new AxiosHeaders(),
+        },
+      };
+
+      const result = responseInterceptor(response);
+
+      expect(result.data.story.content.sections[0].link.href).toBe(
+        '/nested/page',
+      );
+      expect(result.data.story.content.sections[0].nested.deep_link.href).toBe(
+        '/deep/page',
+      );
+    });
+
+    it('should handle arrays with link objects', () => {
+      const response: AxiosResponse = {
+        data: {
+          story: {
+            id: 1,
+            uuid: 'test-uuid',
+            slug: 'docs/my-post',
+            full_slug: 'docs/my-post',
+            content: {
+              links: [
+                { href: '/my-app/page1' },
+                { href: '/my-app/page2' },
+                { href: '/other/page3' }, // Should not be modified
+              ],
+            },
+            alternates: [],
+            translated_slugs: [],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          url: '/stories/docs/my-post',
+          baseURL: 'https://api.storyblok.com/v2/cdn',
+          headers: new AxiosHeaders(),
+        },
+      };
+
+      const result = responseInterceptor(response);
+
+      expect(result.data.story.content.links[0].href).toBe('/page1');
+      expect(result.data.story.content.links[1].href).toBe('/page2');
+      expect(result.data.story.content.links[2].href).toBe('/other/page3');
+    });
+
+    it('should not strip htmlBasePath when it does not match', () => {
+      const response: AxiosResponse = {
+        data: {
+          story: {
+            id: 1,
+            uuid: 'test-uuid',
+            slug: 'docs/my-post',
+            full_slug: 'docs/my-post',
+            content: {
+              link: {
+                href: '/other-app/page',
+              },
+            },
+            alternates: [],
+            translated_slugs: [],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          url: '/stories/docs/my-post',
+          baseURL: 'https://api.storyblok.com/v2/cdn',
+          headers: new AxiosHeaders(),
+        },
+      };
+
+      const result = responseInterceptor(response);
+
+      expect(result.data.story.content.link.href).toBe('/other-app/page');
+    });
+
+    it('should handle href at root level becoming /', () => {
+      const response: AxiosResponse = {
+        data: {
+          story: {
+            id: 1,
+            uuid: 'test-uuid',
+            slug: 'docs/my-post',
+            full_slug: 'docs/my-post',
+            content: {
+              link: {
+                href: '/my-app',
+              },
+            },
+            alternates: [],
+            translated_slugs: [],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          url: '/stories/docs/my-post',
+          baseURL: 'https://api.storyblok.com/v2/cdn',
+          headers: new AxiosHeaders(),
+        },
+      };
+
+      const result = responseInterceptor(response);
+
+      expect(result.data.story.content.link.href).toBe('/');
+    });
+
+    it('should work in stories collection responses', () => {
+      const response: AxiosResponse = {
+        data: {
+          stories: [
+            {
+              id: 1,
+              uuid: 'test-uuid',
+              slug: 'docs/my-post',
+              full_slug: 'docs/my-post',
+              content: {
+                link: { href: '/my-app/page1' },
+              },
+              alternates: [],
+              translated_slugs: [],
+            },
+            {
+              id: 2,
+              uuid: 'test-uuid-2',
+              slug: 'docs/another-post',
+              full_slug: 'docs/another-post',
+              content: {
+                link: { href: '/my-app/page2' },
+              },
+              alternates: [],
+              translated_slugs: [],
+            },
+          ],
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          url: '/stories',
+          baseURL: 'https://api.storyblok.com/v2/cdn',
+          headers: new AxiosHeaders(),
+        },
+      };
+
+      const result = responseInterceptor(response);
+
+      expect(result.data.stories[0].content.link.href).toBe('/page1');
+      expect(result.data.stories[1].content.link.href).toBe('/page2');
+    });
+
+    it('should work with rels array', () => {
+      const response: AxiosResponse = {
+        data: {
+          story: {
+            id: 1,
+            uuid: 'test-uuid',
+            slug: 'docs/my-post',
+            full_slug: 'docs/my-post',
+            content: { title: 'Test' },
+            alternates: [],
+            translated_slugs: [],
+          },
+          rels: [
+            {
+              id: 2,
+              uuid: 'rel-uuid',
+              slug: 'docs/related-post',
+              full_slug: 'docs/related-post',
+              content: {
+                link: { href: '/my-app/related' },
+              },
+              alternates: [],
+              translated_slugs: [],
+            },
+          ],
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          url: '/stories/docs/my-post',
+          baseURL: 'https://api.storyblok.com/v2/cdn',
+          headers: new AxiosHeaders(),
+        },
+      };
+
+      const result = responseInterceptor(response);
+
+      expect(result.data.rels[0].content.link.href).toBe('/related');
+    });
+
+    it('should not process when htmlBasePath is not provided', () => {
+      const config = {
+        folderPath: 'docs/' as const,
+        rewriteLinks: true,
+        // No htmlBasePath
+      };
+      const middleware = storyblokPathConfig(config);
+      middleware(mockAxiosInstance);
+
+      const response: AxiosResponse = {
+        data: {
+          story: {
+            id: 1,
+            uuid: 'test-uuid',
+            slug: 'docs/my-post',
+            full_slug: 'docs/my-post',
+            content: {
+              link: {
+                href: '/my-app/page',
+              },
+            },
+            alternates: [],
+            translated_slugs: [],
+          },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {
+          url: '/stories/docs/my-post',
+          baseURL: 'https://api.storyblok.com/v2/cdn',
+          headers: new AxiosHeaders(),
+        },
+      };
+
+      const result = responseInterceptor(response);
+
+      // href should remain unchanged
+      expect(result.data.story.content.link.href).toBe('/my-app/page');
+    });
+  });
+
   describe('edge cases', () => {
-    it('should handle different basePath formats', () => {
+    it('should handle different folderPath formats', () => {
       const testCases = [
-        { basePath: 'blog/' as const, expected: 'blog/' },
-        { basePath: 'en/blog/' as const, expected: 'en/blog/' },
+        { folderPath: 'blog/' as const, expected: 'blog/' },
+        { folderPath: 'en/blog/' as const, expected: 'en/blog/' },
         {
-          basePath: 'complex/nested/path/' as const,
+          folderPath: 'complex/nested/path/' as const,
           expected: 'complex/nested/path/',
         },
       ];
 
-      testCases.forEach(({ basePath, expected }) => {
-        const config = { basePath };
+      testCases.forEach(({ folderPath, expected }) => {
+        const config = { folderPath };
         const middleware = storyblokPathConfig(config);
         middleware(mockAxiosInstance);
 
@@ -784,7 +1189,7 @@ describe('storyblokPathConfig', () => {
     });
 
     it('should handle missing URL gracefully', () => {
-      const config = { basePath: 'blog/' as const };
+      const config = { folderPath: 'blog/' as const };
       const middleware = storyblokPathConfig(config);
       middleware(mockAxiosInstance);
 
@@ -797,7 +1202,7 @@ describe('storyblokPathConfig', () => {
     });
 
     it('should be idempotent when applied multiple times', () => {
-      const config = { basePath: 'blog/' as const };
+      const config = { folderPath: 'blog/' as const };
       const middleware = storyblokPathConfig(config);
 
       middleware(mockAxiosInstance);

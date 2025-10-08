@@ -8,15 +8,15 @@ interface HeaderProps {
 }
 
 export const Header: FC<HeaderProps> = ({ start, end }) => (
-  <header className="shadow-md px-2 py-4 md:px-6 z-50 bg-white">
+  <header className="shadow-sm px-2 py-4 md:px-6 bg-white">
     <div className="grid grid-cols-[1fr_auto_1fr] items-center container mx-auto">
       <div className="flex justify-start">{start}</div>
       <div className="flex justify-center">
         <div className="flex items-center gap-2">
           <Image
-            src={logo.src}
-            width={logo.width}
-            height={logo.height}
+            src={logo.src || '/virgin-media-o2-logo.svg'}
+            width={logo.width || 200}
+            height={logo.height || 40}
             alt="Virgin Media O2 Logo"
             className="h-10 w-auto"
             priority

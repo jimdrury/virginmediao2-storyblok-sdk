@@ -3,7 +3,7 @@ import type { FC } from 'react';
 
 export interface StoryblokRootProps {
   story: StoryType<BlokType>;
-  version: 'published' | 'draft';
+  version?: 'published' | 'draft';
   [rootContextProp: string]: unknown;
 }
 
@@ -46,4 +46,5 @@ export type BC<
 export interface StoryblokEngineProps {
   handlerPath: `/${string}`;
   components: Record<string, BC<never>>;
+  draftInReleaseOnly?: boolean;
 }

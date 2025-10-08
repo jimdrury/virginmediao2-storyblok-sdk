@@ -16,25 +16,34 @@ import {
 
 export interface StoryblokPathConfigOptions {
   /**
-   * The base path to automatically append to starts_with parameter
+   * The folder path within Storyblok to automatically append to starts_with parameter
    * for Stories and GetLinks API calls
    */
-  basePath: `${string}/`;
+  folderPath: `${string}/`;
   /**
-   * Whether to rewrite response data by removing the basePath from story paths
+   * Whether to rewrite response data by removing the folderPath from story paths
    * This WILL mutate the Storyblok response
    * @default false
    */
   rewriteLinks?: boolean;
+  /**
+   * The HTML/application basePath (e.g., Next.js basePath) to strip from hrefs in link objects
+   * This is useful when Storyblok returns links with the application basePath prepended,
+   * but your framework (like Next.js) automatically adds it, causing duplication.
+   * Only applied when rewriteLinks is true.
+   * @example "my-app" - will strip "/my-app" from "/my-app/page" to get "/page"
+   */
+  htmlBasePath?: `/${string}`;
 }
 
 /**
  * Factory function that creates a Storyblok path configuration middleware
  *
- * This middleware automatically handles base path configuration for Storyblok API calls:
- * - For Stories and GetLinks API calls: appends a `starts_with` query parameter with the configured base path
- * - For individual story requests: prepends the base path to the story slug in the URL
- * - Optionally removes the basePath from response data paths when `rewriteLinks` is enabled
+ * This middleware automatically handles folder path configuration for Storyblok API calls:
+ * - For Stories and GetLinks API calls: appends a `starts_with` query parameter with the configured folder path
+ * - For individual story requests: prepends the folder path to the story slug in the URL
+ * - Optionally removes the folderPath from response data paths when `rewriteLinks` is enabled
+ * - Optionally removes the htmlBasePath from href fields in link objects when `rewriteLinks` is enabled
  * If a `starts_with` parameter is already present, it will be left unchanged.
  *
  * @param config - Configuration for the path middleware
@@ -45,17 +54,19 @@ export interface StoryblokPathConfigOptions {
  * import { storyblokPathConfig } from "@virginmediao2/storyblok-sdk";
  *
  * const pathMiddleware = storyblokPathConfig({
- *   basePath: "blog/",
- *   rewriteLinks: true // Optional: rewrite response paths
+ *   folderPath: "docs/",
+ *   rewriteLinks: true, // Optional: rewrite response paths
+ *   htmlBasePath: "my-app" // Optional: strip app basePath from hrefs
  * });
  *
  * // Apply to axios instance
  * pathMiddleware(axiosInstance);
  *
  * // This will automatically:
- * // - Add starts_with=blog/ to /stories and /links requests
- * // - Transform /stories/my-article to /stories/blog/my-article
- * // - If rewriteLinks=true: Remove "blog/" from response paths: "blog/my-article" -> "/my-article"
+ * // - Add starts_with=docs/ to /stories and /links requests
+ * // - Transform /stories/my-article to /stories/docs/my-article
+ * // - If rewriteLinks=true: Remove "docs/" from response paths: "docs/my-article" -> "/my-article"
+ * // - If htmlBasePath set: Remove "/my-app" from hrefs: "/my-app/page" -> "/page"
  * ```
  */
 export const storyblokPathConfig =
@@ -77,11 +88,11 @@ export const storyblokPathConfig =
 
         // Handle individual story requests (e.g., /stories/some-slug)
         if (isIndividualStoryRequest(url)) {
-          // For individual story requests, prepend the basePath to the slug
+          // For individual story requests, prepend the folderPath to the slug
           const slug = extractSlugFromUrl(url);
-          if (slug !== null && !slug.startsWith(config.basePath)) {
-            // Join basePath and slug, handling potential double slashes
-            const newSlug = joinPaths(config.basePath, slug);
+          if (slug !== null && !slug.startsWith(config.folderPath)) {
+            // Join folderPath and slug, handling potential double slashes
+            const newSlug = joinPaths(config.folderPath, slug);
             requestConfig.url = url.replace(
               `/stories/${slug}`,
               `/stories/${newSlug}`,
@@ -98,7 +109,7 @@ export const storyblokPathConfig =
           if (!requestConfig.params.starts_with) {
             requestConfig.params = {
               ...requestConfig.params,
-              starts_with: config.basePath,
+              starts_with: config.folderPath,
             };
           }
         }
@@ -116,10 +127,11 @@ export const storyblokPathConfig =
           return response;
         }
 
-        // Process the response data to remove basePath from paths
-        const processedData = removeBasePathFromResponse(
+        // Process the response data to remove folderPath from paths
+        const processedData = removeFolderPathFromResponse(
           response.data,
-          config.basePath,
+          config.folderPath,
+          config.htmlBasePath,
         );
         response.data = processedData;
 
@@ -148,11 +160,13 @@ type StoryblokResponseData =
   | Record<string, unknown>;
 
 /**
- * Removes basePath from response data paths and replaces with '/'
+ * Removes folderPath from response data paths and replaces with '/'
+ * Optionally removes htmlBasePath from href fields in link objects
  */
-function removeBasePathFromResponse(
+function removeFolderPathFromResponse(
   data: StoryblokResponseData,
-  basePath: string,
+  folderPath: string,
+  htmlBasePath?: string,
 ): StoryblokResponseData {
   if (!data || typeof data !== 'object') {
     return data;
@@ -164,7 +178,8 @@ function removeBasePathFromResponse(
       ...data,
       story: processStoryRecursively(
         data.story as StoryType<BlokType>,
-        basePath,
+        folderPath,
+        htmlBasePath,
       ),
     };
 
@@ -172,7 +187,7 @@ function removeBasePathFromResponse(
     if ('rels' in data && Array.isArray(data.rels)) {
       processedData.rels = (data.rels as StoryType<BlokType>[]).map(
         (story: StoryType<BlokType>) =>
-          processStoryRecursively(story, basePath),
+          processStoryRecursively(story, folderPath, htmlBasePath),
       );
     }
 
@@ -185,21 +200,21 @@ function removeBasePathFromResponse(
 
         // Check if this is a StoryblokLink (has real_path property)
         if ('real_path' in item) {
-          return removeBasePathFromLink(item as StoryblokLink, basePath);
+          return removeFolderPathFromLink(item as StoryblokLink, folderPath);
         }
         // Check if this is a simplified story object (has full_slug but not all story properties)
         if ('full_slug' in item) {
           const typedItem = item as Record<string, unknown>;
           return {
             ...typedItem,
-            full_slug: removeBasePathFromSlug(
+            full_slug: removeFolderPathFromSlug(
               typedItem.full_slug as string,
-              basePath.replace(/\/$/, ''),
+              folderPath.replace(/\/$/, ''),
             ),
             url: typedItem.url
-              ? removeBasePathFromSlug(
+              ? removeFolderPathFromSlug(
                   typedItem.url as string,
-                  basePath.replace(/\/$/, ''),
+                  folderPath.replace(/\/$/, ''),
                 )
               : typedItem.url,
           };
@@ -211,7 +226,11 @@ function removeBasePathFromResponse(
           'slug' in item &&
           'content' in item
         ) {
-          return processStoryRecursively(item as StoryType<BlokType>, basePath);
+          return processStoryRecursively(
+            item as StoryType<BlokType>,
+            folderPath,
+            htmlBasePath,
+          );
         }
         return item;
       });
@@ -226,7 +245,7 @@ function removeBasePathFromResponse(
       ...data,
       stories: (data.stories as StoryType<BlokType>[]).map(
         (story: StoryType<BlokType>) =>
-          processStoryRecursively(story, basePath),
+          processStoryRecursively(story, folderPath, htmlBasePath),
       ),
     };
 
@@ -234,7 +253,7 @@ function removeBasePathFromResponse(
     if ('rels' in data && Array.isArray(data.rels)) {
       processedData.rels = (data.rels as StoryType<BlokType>[]).map(
         (story: StoryType<BlokType>) =>
-          processStoryRecursively(story, basePath),
+          processStoryRecursively(story, folderPath, htmlBasePath),
       );
     }
 
@@ -247,21 +266,21 @@ function removeBasePathFromResponse(
 
         // Check if this is a StoryblokLink (has real_path property)
         if ('real_path' in item) {
-          return removeBasePathFromLink(item as StoryblokLink, basePath);
+          return removeFolderPathFromLink(item as StoryblokLink, folderPath);
         }
         // Check if this is a simplified story object
         if ('full_slug' in item) {
           const typedItem = item as Record<string, unknown>;
           return {
             ...typedItem,
-            full_slug: removeBasePathFromSlug(
+            full_slug: removeFolderPathFromSlug(
               typedItem.full_slug as string,
-              basePath.replace(/\/$/, ''),
+              folderPath.replace(/\/$/, ''),
             ),
             url: typedItem.url
-              ? removeBasePathFromSlug(
+              ? removeFolderPathFromSlug(
                   typedItem.url as string,
-                  basePath.replace(/\/$/, ''),
+                  folderPath.replace(/\/$/, ''),
                 )
               : typedItem.url,
           };
@@ -273,7 +292,11 @@ function removeBasePathFromResponse(
           'slug' in item &&
           'content' in item
         ) {
-          return processStoryRecursively(item as StoryType<BlokType>, basePath);
+          return processStoryRecursively(
+            item as StoryType<BlokType>,
+            folderPath,
+            htmlBasePath,
+          );
         }
         return item;
       });
@@ -293,7 +316,7 @@ function removeBasePathFromResponse(
     const processedLinks: Record<string, StoryblokLink> = {};
 
     Object.entries(linksObject).forEach(([key, link]) => {
-      processedLinks[key] = removeBasePathFromLink(link, basePath);
+      processedLinks[key] = removeFolderPathFromLink(link, folderPath);
     });
 
     processedData.links = processedLinks;
@@ -304,20 +327,28 @@ function removeBasePathFromResponse(
 }
 
 /**
- * Processes a story object recursively to remove basePath from relevant fields
+ * Processes a story object recursively to remove folderPath from relevant fields
+ * and optionally removes htmlBasePath from href fields in link objects
  */
 function processStoryRecursively(
   story: StoryType<BlokType>,
-  basePath: string,
+  folderPath: string,
+  htmlBasePath?: string,
 ): StoryType<BlokType> {
-  const basePathWithoutSlash = basePath.replace(/\/$/, '');
+  const folderPathWithoutSlash = folderPath.replace(/\/$/, '');
 
   return {
     ...story,
-    slug: removeBasePathFromSlug(story.slug, basePathWithoutSlash),
-    full_slug: removeBasePathFromSlug(story.full_slug, basePathWithoutSlash),
+    slug: removeFolderPathFromSlug(story.slug, folderPathWithoutSlash),
+    full_slug: removeFolderPathFromSlug(
+      story.full_slug,
+      folderPathWithoutSlash,
+    ),
     default_full_slug: story.default_full_slug
-      ? removeBasePathFromSlug(story.default_full_slug, basePathWithoutSlash)
+      ? removeFolderPathFromSlug(
+          story.default_full_slug,
+          folderPathWithoutSlash,
+        )
       : story.default_full_slug,
     alternates: story.alternates.map(
       (alternate: {
@@ -330,10 +361,10 @@ function processStoryRecursively(
         parent_id: number | null;
       }) => ({
         ...alternate,
-        slug: removeBasePathFromSlug(alternate.slug, basePathWithoutSlash),
-        full_slug: removeBasePathFromSlug(
+        slug: removeFolderPathFromSlug(alternate.slug, folderPathWithoutSlash),
+        full_slug: removeFolderPathFromSlug(
           alternate.full_slug,
-          basePathWithoutSlash,
+          folderPathWithoutSlash,
         ),
       }),
     ),
@@ -344,40 +375,61 @@ function processStoryRecursively(
         lang: string;
       }) => ({
         ...translatedSlug,
-        path: removeBasePathFromSlug(translatedSlug.path, basePathWithoutSlash),
+        path: removeFolderPathFromSlug(
+          translatedSlug.path,
+          folderPathWithoutSlash,
+        ),
       }),
     ),
     content: processContentRecursively(
       story.content as unknown as Record<string, unknown>,
-      basePath,
+      folderPath,
+      htmlBasePath,
     ) as unknown as BlokType,
   };
 }
 
 /**
- * Processes story content recursively to remove basePath from any URL-like fields
+ * Processes story content recursively to remove folderPath from any URL-like fields
+ * and optionally removes htmlBasePath from href fields in link objects
  */
 function processContentRecursively(
   content: Record<string, unknown>,
-  basePath: string,
+  folderPath: string,
+  htmlBasePath?: string,
 ): Record<string, unknown> {
-  const basePathWithoutSlash = basePath.replace(/\/$/, '');
+  const folderPathWithoutSlash = folderPath.replace(/\/$/, '');
   const processed: Record<string, unknown> = {};
 
   Object.entries(content).forEach(([key, value]) => {
-    if (typeof value === 'string' && value.startsWith(basePathWithoutSlash)) {
-      // If it looks like a path that starts with our basePath, remove it
-      processed[key] = removeBasePathFromSlug(value, basePathWithoutSlash);
+    // Special handling for href field with htmlBasePath
+    if (key === 'href' && typeof value === 'string' && htmlBasePath) {
+      const normalizedHtmlBasePath = `/${htmlBasePath.replace(/^\/+|\/+$/g, '')}`;
+      if (value.startsWith(normalizedHtmlBasePath)) {
+        processed[key] = value.substring(normalizedHtmlBasePath.length) || '/';
+      } else {
+        processed[key] = value;
+      }
+    } else if (
+      typeof value === 'string' &&
+      value.startsWith(folderPathWithoutSlash)
+    ) {
+      // If it looks like a path that starts with our folderPath, remove it
+      processed[key] = removeFolderPathFromSlug(value, folderPathWithoutSlash);
     } else if (Array.isArray(value)) {
       // Process arrays recursively
       processed[key] = value.map((item) => {
-        if (typeof item === 'string' && item.startsWith(basePathWithoutSlash)) {
-          return removeBasePathFromSlug(item, basePathWithoutSlash);
+        if (
+          typeof item === 'string' &&
+          item.startsWith(folderPathWithoutSlash)
+        ) {
+          return removeFolderPathFromSlug(item, folderPathWithoutSlash);
         }
         if (item && typeof item === 'object') {
           return processContentRecursively(
             item as Record<string, unknown>,
-            basePath,
+            folderPath,
+            htmlBasePath,
           );
         }
         return item;
@@ -386,7 +438,8 @@ function processContentRecursively(
       // Process nested objects recursively
       processed[key] = processContentRecursively(
         value as Record<string, unknown>,
-        basePath,
+        folderPath,
+        htmlBasePath,
       );
     } else {
       processed[key] = value;
@@ -397,28 +450,31 @@ function processContentRecursively(
 }
 
 /**
- * Removes basePath from a StoryblokLink object
+ * Removes folderPath from a StoryblokLink object
  */
-function removeBasePathFromLink(
+function removeFolderPathFromLink(
   link: StoryblokLink,
-  basePath: string,
+  folderPath: string,
 ): StoryblokLink {
-  const basePathWithoutSlash = basePath.replace(/\/$/, '');
+  const folderPathWithoutSlash = folderPath.replace(/\/$/, '');
 
   return {
     ...link,
-    slug: removeBasePathFromSlug(link.slug, basePathWithoutSlash),
+    slug: removeFolderPathFromSlug(link.slug, folderPathWithoutSlash),
     path: link.path
-      ? removeBasePathFromSlug(link.path, basePathWithoutSlash)
+      ? removeFolderPathFromSlug(link.path, folderPathWithoutSlash)
       : link.path,
-    real_path: removeBasePathFromSlug(link.real_path, basePathWithoutSlash),
+    real_path: removeFolderPathFromSlug(link.real_path, folderPathWithoutSlash),
     alternates: link.alternates
       ? link.alternates.map((alternate) => ({
           ...alternate,
-          path: removeBasePathFromSlug(alternate.path, basePathWithoutSlash),
-          translated_slug: removeBasePathFromSlug(
+          path: removeFolderPathFromSlug(
+            alternate.path,
+            folderPathWithoutSlash,
+          ),
+          translated_slug: removeFolderPathFromSlug(
             alternate.translated_slug,
-            basePathWithoutSlash,
+            folderPathWithoutSlash,
           ),
         }))
       : link.alternates,
@@ -426,14 +482,14 @@ function removeBasePathFromLink(
 }
 
 /**
- * Removes basePath from a slug/path string
+ * Removes folderPath from a slug/path string
  */
-function removeBasePathFromSlug(
+function removeFolderPathFromSlug(
   slug: string,
-  basePathWithoutSlash: string,
+  folderPathWithoutSlash: string,
 ): string {
-  if (slug.startsWith(basePathWithoutSlash)) {
-    const remaining = slug.substring(basePathWithoutSlash.length);
+  if (slug.startsWith(folderPathWithoutSlash)) {
+    const remaining = slug.substring(folderPathWithoutSlash.length);
     // If what remains starts with a slash, keep it; otherwise add one
     return remaining.startsWith('/') ? remaining : `/${remaining}`;
   }

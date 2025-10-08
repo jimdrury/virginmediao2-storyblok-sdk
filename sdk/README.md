@@ -34,7 +34,7 @@ const sdk = new StoryblokSdk({
 });
 
 // Recommended: Use the comprehensive middleware pattern
-import { storyblokCdnConfig, storyblokRelationsResolver, storyblokBasePath } from "@virginmediao2/storyblok-sdk";
+import { storyblokCdnConfig, storyblokResolverConfig, storyblokPathConfig } from "@virginmediao2/storyblok-sdk";
 import axiosRetry from 'axios-retry';
 import curlirize from 'axios-curlirize';
 
@@ -45,15 +45,14 @@ const resolveRelations = [
 ];
 
 export const storyblokSdk = new StoryblokSdk({
-  accessToken: "your-preview-token",
+  accessToken: "your-preview-token", // Access token passed directly to SDK
   middlewares: [
     (i) => axiosRetry(i, { retries: 3 }),
     curlirize,
     storyblokCdnConfig({ 
-      accessToken: "your-preview-token",
       assetDomain: "https://assets.example.com" // Optional: custom asset domain
     }),
-    storyblokRelationsResolver({
+    storyblokResolverConfig({
       resolveRelations,
       removeUnresolvedRelations: false,
     }),
@@ -111,23 +110,15 @@ For custom authentication with your own axios instances:
 
 ```typescript
 import axios from "axios";
-import { storyblokCdnAuth } from "@virginmediao2/storyblok-sdk";
+import { StoryblokSdk } from "@virginmediao2/storyblok-sdk";
 
-// Create your own axios instance
-const customAxios = axios.create({ 
-  baseURL: "https://api.storyblok.com/v2/cdn" 
-});
-
-// Create the auth middleware with your config
-const authMiddleware = storyblokCdnAuth({
+// Recommended: Use the SDK which handles authentication automatically
+const sdk = new StoryblokSdk({
   accessToken: "your-access-token"
 });
 
-// Apply the middleware to your axios instance
-authMiddleware(customAxios);
-
 // Now all requests will automatically include the token
-const response = await customAxios.get("/stories");
+const response = await sdk.getStories();
 ```
 
 ## API Reference
@@ -255,30 +246,29 @@ The SDK provides a comprehensive middleware system for extending functionality. 
 
 ```typescript
 import { 
-  storyblokCdnAuth, 
-  storyblokCdnDomain,
-  storyblokRelationsResolver, 
-  storyblokBasePath 
+  storyblokCdnConfig,
+  storyblokResolverConfig, 
+  storyblokPathConfig 
 } from "@virginmediao2/storyblok-sdk";
 
-// CDN Authentication (applied automatically)
+// CDN Authentication (handled by SDK constructor)
 const sdk = new StoryblokSdk({
-  accessToken: "your-token" // CDN auth middleware applied automatically
+  accessToken: "your-token" // Access token passed directly to SDK
 });
 
-// CDN Domain Replacement
-const cdnDomainMiddleware = storyblokCdnDomain({
+// CDN Config with Asset Domain Replacement
+const cdnConfigMiddleware = storyblokCdnConfig({
   assetDomain: "https://assets.example.com"
 });
 
 // Relations Resolver
-const relationsMiddleware = storyblokRelationsResolver({
+const resolverMiddleware = storyblokResolverConfig({
   resolveRelations: ['blog_post.author', 'page.featured_story']
 });
 
-// Base Path Filtering
-const basePathMiddleware = storyblokBasePath({
-  basePath: "blog/"
+// Folder Path Filtering
+const pathMiddleware = storyblokPathConfig({
+  folderPath: "blog/"
 });
 
 // Custom middleware
@@ -288,10 +278,9 @@ const customMiddleware = (axiosInstance: AxiosInstance) => {
 ```
 
 **Available Middlewares:**
-- ✅ **CDN Authentication** - Automatic token injection
-- ✅ **CDN Domain** - Custom asset domain replacement
+- ✅ **CDN Config** - Asset domain replacement and space filtering
 - ✅ **Relations Resolver** - Automatic relation resolution
-- ✅ **Base Path** - Automatic path filtering
+- ✅ **Path Config** - Automatic path filtering and link rewriting
 - ✅ **Custom Middlewares** - Extend with your own logic
 
 ## Rate Limiting & Exponential Backoff
@@ -332,41 +321,34 @@ The SDK includes a powerful middleware system that allows you to extend and cust
 
 The SDK automatically applies essential middlewares to handle authentication and other core functionality:
 
-#### 1. CDN Authentication Middleware (`storyblokCdnAuth`)
+#### 1. Authentication
 
-Automatically adds the access token to all requests as a query parameter.
+Authentication is handled directly by the SDK constructor - simply pass your access token.
 
 ```typescript
-import { storyblokCdnAuth } from "@virginmediao2/storyblok-sdk";
+import { StoryblokSdk } from "@virginmediao2/storyblok-sdk";
 
-// Applied automatically in the SDK constructor
+// Access token is passed directly to the SDK
 const sdk = new StoryblokSdk({
-  accessToken: "your-access-token" // This middleware is applied automatically
+  accessToken: "your-access-token" // Authentication handled automatically
 });
-
-// Or use with your own axios instance
-const customAxios = axios.create({ baseURL: "https://api.storyblok.com/v2/cdn" });
-const authMiddleware = storyblokCdnAuth({
-  accessToken: "your-access-token"
-});
-authMiddleware(customAxios);
 ```
 
 **Features:**
 - ✅ **Automatic token injection** - Adds `token` parameter to all requests
 - ✅ **Non-destructive** - Won't override existing token parameters
-- ✅ **Request interceptor** - Works seamlessly with axios interceptors
+- ✅ **Built-in** - No separate middleware needed
 - ✅ **TypeScript support** - Fully typed configuration
 
-#### 2. Relations Resolver Middleware (`storyblokRelationsResolver`)
+#### 2. Relations Resolver Middleware (`storyblokResolverConfig`)
 
 Automatically resolves Storyblok relations in your content, converting UUID references to full story objects.
 
 ```typescript
-import { storyblokRelationsResolver } from "@virginmediao2/storyblok-sdk";
+import { storyblokResolverConfig } from "@virginmediao2/storyblok-sdk";
 
 // Configure which relations to resolve
-const relationsMiddleware = storyblokRelationsResolver({
+const resolverMiddleware = storyblokResolverConfig({
   resolveRelations: [
     'blog_post.author',           // Resolve author field in blog_post component
     'page.featured_story',        // Resolve featured_story field in page component
@@ -375,12 +357,15 @@ const relationsMiddleware = storyblokRelationsResolver({
   removeUnresolvedRelations: false // Keep unresolved relations as UUIDs (default: false)
 });
 
-// Apply to your axios instance
-relationsMiddleware(customAxios);
+// Apply to SDK
+const sdk = new StoryblokSdk({
+  accessToken: "your-token",
+  middlewares: [resolverMiddleware]
+});
 
 // Now when you fetch stories, relations will be automatically resolved
-const response = await customAxios.get('/stories');
-// response.data.story.content.author will be a full story object instead of a UUID
+const response = await sdk.getStories();
+// response.data.stories[0].content.author will be a full story object instead of a UUID
 ```
 
 **Features:**
@@ -404,12 +389,12 @@ interface StoryblokRelationsResolverConfig {
 
 ```typescript
 // Basic setup
-const relationsMiddleware = storyblokRelationsResolver({
+const resolverMiddleware = storyblokResolverConfig({
   resolveRelations: ['blog_post.author', 'page.featured_story']
 });
 
 // Advanced setup with cleanup
-const advancedRelationsMiddleware = storyblokRelationsResolver({
+const advancedResolverMiddleware = storyblokResolverConfig({
   resolveRelations: [
     'blog_post.author',
     'blog_post.featured_image',
@@ -422,24 +407,27 @@ const advancedRelationsMiddleware = storyblokRelationsResolver({
 // Apply to SDK
 const sdk = new StoryblokSdk({
   accessToken: "your-token",
-  middlewares: [relationsMiddleware]
+  middlewares: [resolverMiddleware]
 });
 ```
 
-#### 3. Base Path Middleware (`storyblokBasePath`)
+#### 3. Folder Path Middleware (`storyblokPathConfig`)
 
-Automatically appends a `starts_with` query parameter to Stories and GetLinks API calls with a preconfigured base path.
+Automatically appends a `starts_with` query parameter to Stories and GetLinks API calls with a preconfigured folder path within Storyblok. Optionally rewrites response data to strip paths from story objects and href fields from link objects.
 
 ```typescript
-import { storyblokBasePath } from "@virginmediao2/storyblok-sdk";
+import { storyblokPathConfig } from "@virginmediao2/storyblok-sdk";
 
-// Configure the base path for automatic starts_with filtering
-const basePathMiddleware = storyblokBasePath({
-  basePath: "blog/"  // Will automatically add starts_with=blog/ to Stories and Links API calls
+// Configure the folder path for automatic starts_with filtering
+const pathMiddleware = storyblokPathConfig({
+  folderPath: "blog/"  // Will automatically add starts_with=blog/ to Stories and Links API calls
 });
 
-// Apply to your axios instance
-basePathMiddleware(customAxios);
+// Apply to SDK
+const sdk = new StoryblokSdk({
+  accessToken: "your-token",
+  middlewares: [pathMiddleware]
+});
 
 // Now all Stories and Links API calls will automatically include starts_with=blog/
 const stories = await customAxios.get('/stories'); // Automatically becomes /stories?starts_with=blog/
@@ -450,12 +438,27 @@ const links = await customAxios.get('/links');     // Automatically becomes /lin
 - ✅ **Automatic path filtering** - Adds `starts_with` parameter to Stories and GetLinks APIs
 - ✅ **Non-destructive** - Won't override existing `starts_with` parameters
 - ✅ **Selective application** - Only affects Stories and GetLinks endpoints
+- ✅ **Response rewriting** - Optional path and href stripping from responses
+- ✅ **Next.js basePath support** - Strips application basePath from link hrefs
 - ✅ **TypeScript support** - Fully typed configuration
+
+**Configuration Options:**
+
+```typescript
+interface StoryblokPathConfigOptions {
+  folderPath: `${string}/`;     // Folder path within Storyblok to append to API calls
+  rewriteLinks?: boolean;       // Remove folderPath from response paths (default: false)
+  htmlBasePath?: string;        // Strip app basePath from href fields (requires rewriteLinks)
+}
+```
 
 **Use Cases:**
 - Filter all content to a specific section (e.g., blog posts only)
 - Organize content by path structure
 - Simplify API calls by removing repetitive `starts_with` parameters
+- Fix Next.js basePath duplication in link hrefs
+
+**Basic Usage:**
 
 ```typescript
 // Without middleware - repetitive starts_with parameters
@@ -466,7 +469,7 @@ const blogLinks = await sdk.getLinks({ starts_with: 'blog/' });
 const sdk = new StoryblokSdk({
   accessToken: "your-token",
   middlewares: [
-    storyblokBasePath({ basePath: 'blog/' })
+    storyblokPathConfig({ folderPath: 'blog/' })
   ]
 });
 
@@ -474,29 +477,117 @@ const blogStories = await sdk.getStories(); // Automatically filtered to blog/
 const blogLinks = await sdk.getLinks();     // Automatically filtered to blog/
 ```
 
-#### 4. CDN Domain Middleware (`storyblokCdnDomain`)
+**Advanced Usage with Link Rewriting:**
+
+```typescript
+// Enable link rewriting to strip paths from responses
+const pathMiddleware = storyblokPathConfig({
+  folderPath: "docs/",
+  rewriteLinks: true  // Removes "docs/" from all story slugs and paths
+});
+
+const sdk = new StoryblokSdk({
+  accessToken: "your-token",
+  middlewares: [pathMiddleware]
+});
+
+// Response will have paths stripped:
+// "docs/getting-started" -> "/getting-started"
+const response = await sdk.getStories();
+console.log(response.data.stories[0].full_slug); // "/getting-started" instead of "docs/getting-started"
+```
+
+**Next.js basePath Integration:**
+
+When using Next.js with a `basePath` configuration, Storyblok may return link objects with the basePath already included. This causes duplication since Next.js automatically prepends the basePath. Use the `htmlBasePath` option to fix this:
+
+```typescript
+// next.config.js
+module.exports = {
+  basePath: '/my-app'
+};
+
+// Storyblok returns: { href: "/my-app/page" }
+// Next.js Link prepends: /my-app + /my-app/page = /my-app/my-app/page ❌
+
+// Solution: Strip the basePath from Storyblok responses
+const pathMiddleware = storyblokPathConfig({
+  folderPath: "docs/",
+  rewriteLinks: true,
+  htmlBasePath: "my-app"  // Strips "/my-app" from hrefs
+});
+
+const sdk = new StoryblokSdk({
+  accessToken: "your-token",
+  middlewares: [pathMiddleware]
+});
+
+// Now Storyblok returns: { href: "/page" }
+// Next.js Link prepends correctly: /my-app + /page = /my-app/page ✅
+const response = await sdk.getStories();
+```
+
+**How `htmlBasePath` Works:**
+
+The `htmlBasePath` option specifically targets `href` fields in link objects within your content:
+
+```typescript
+// Original Storyblok response
+{
+  content: {
+    button: {
+      href: "/my-app/docs/getting-started",
+      linktype: "story"
+    }
+  }
+}
+
+// After processing with htmlBasePath: "my-app"
+{
+  content: {
+    button: {
+      href: "/docs/getting-started",  // htmlBasePath stripped
+      linktype: "story"
+    }
+  }
+}
+
+// The href can now be safely used with Next.js Link component
+<Link href={button.href}>{button.text}</Link>
+```
+
+**Notes:**
+- `htmlBasePath` only works when `rewriteLinks: true` is enabled
+- It only affects `href` fields, not slugs or paths (use `folderPath` for that)
+- Handles leading/trailing slashes automatically
+- Processes nested objects and arrays recursively
+
+#### 4. CDN Config Middleware (`storyblokCdnConfig`)
 
 Automatically replaces `a.storyblok.com` asset URLs with a custom domain in response data, with optional space ID filtering for multi-tenant applications.
 
 ```typescript
-import { storyblokCdnDomain } from "@virginmediao2/storyblok-sdk";
+import { storyblokCdnConfig } from "@virginmediao2/storyblok-sdk";
 
 // Basic usage - replace all asset URLs with custom domain
-const cdnDomainMiddleware = storyblokCdnDomain({
+const cdnConfigMiddleware = storyblokCdnConfig({
   assetDomain: "https://assets.example.com"
 });
 
 // Advanced usage - with space ID filtering for multi-tenant applications
-const multiTenantCdnMiddleware = storyblokCdnDomain({
+const multiTenantCdnMiddleware = storyblokCdnConfig({
   assetDomain: "https://cdn.myapp.com",
   allowedSpaceIds: ["329767", "123456"] // Only process URLs from these spaces
 });
 
-// Apply to your axios instance
-cdnDomainMiddleware(customAxios);
+// Apply to SDK
+const sdk = new StoryblokSdk({
+  accessToken: "your-token",
+  middlewares: [cdnConfigMiddleware]
+});
 
 // Now all Storyblok asset URLs will be automatically replaced
-const response = await customAxios.get('/stories');
+const response = await sdk.getStories();
 // https://a.storyblok.com/f/329767/image.jpg -> https://assets.example.com/f/329767/image.jpg
 ```
 
@@ -511,7 +602,7 @@ const response = await customAxios.get('/stories');
 **Configuration Options:**
 
 ```typescript
-interface StoryblokCdnDomainConfig {
+interface StoryblokCdnConfigOptions {
   assetDomain: `https://${string}`;     // Custom domain for assets (must include protocol)
   allowedSpaceIds?: `${number}`[];      // Optional: Array of allowed space IDs
 }
@@ -528,18 +619,18 @@ interface StoryblokCdnDomainConfig {
 
 ```typescript
 // Scenario 1: Simple CDN replacement for better performance
-const performanceCdn = storyblokCdnDomain({
+const performanceCdn = storyblokCdnConfig({
   assetDomain: "https://fast-cdn.myapp.com"
 });
 
 // Scenario 2: Multi-tenant SaaS application
-const multiTenantCdn = storyblokCdnDomain({
+const multiTenantCdn = storyblokCdnConfig({
   assetDomain: "https://assets.myapp.com",
   allowedSpaceIds: ["329767"] // Only allow assets from this tenant's space
 });
 
 // Scenario 3: Development environment with local assets
-const devCdn = storyblokCdnDomain({
+const devCdn = storyblokCdnConfig({
   assetDomain: "https://localhost:3000/assets"
 });
 
@@ -569,7 +660,7 @@ The middleware intelligently handles Storyblok asset objects:
   "title": "Beautiful image"
 }
 
-// After processing with storyblokCdnDomain
+// After processing with storyblokCdnConfig
 {
   "fieldtype": "asset", 
   "filename": "https://assets.example.com/f/329767/image.jpg", // URL replaced

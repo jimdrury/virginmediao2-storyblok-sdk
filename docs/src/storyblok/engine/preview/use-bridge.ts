@@ -1,18 +1,41 @@
 'use client';
 
-import StoryblokBridge from '@storyblok/preview-bridge';
-import type { StoryType } from '@virginmediao2/storyblok-sdk/src';
-import { useLayoutEffect, useState } from 'react';
+import StoryblokBridge, {
+  type InputBridgeEvent,
+} from '@storyblok/preview-bridge';
+import type { StoryType } from '@virginmediao2/storyblok-sdk';
+import { useCallback, useState } from 'react';
+import { useEffectOnce } from 'react-use';
 
 export const useBridge = () => {
   const [story, setStory] = useState<StoryType>();
+  const [inEditMode, setInEditMode] = useState(false);
 
-  useLayoutEffect(() => {
-    const storyblokBridge = new StoryblokBridge();
-    storyblokBridge.on('input', ({ story }) => {
-      setStory(story as StoryType);
+  const onStoryUpdate = useCallback((event: InputBridgeEvent) => {
+    const existingStoryStr = JSON.stringify(event);
+    const newStoryStr = JSON.stringify(event.story);
+    if (existingStoryStr !== newStoryStr) {
+      setStory(event.story as StoryType);
+    }
+  }, []);
+
+  const onEnterEditMode = useCallback(() => {
+    setInEditMode(true);
+  }, []);
+
+  useEffectOnce(() => {
+    const bridge = new StoryblokBridge({
+      resolveLinks: 'story',
+      preventClicks: true,
+      initOnlyOnce: true,
     });
+
+    bridge.on('input', onStoryUpdate);
+    bridge.on('enterEditmode', onEnterEditMode);
   });
 
-  return story;
+  return {
+    story,
+    inEditMode,
+  };
 };

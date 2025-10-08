@@ -59,9 +59,9 @@ export const Footer: FC = () => {
 
         <div className="flex gap-4 items-center ">
           <Image
-            src={logo.src}
-            width={logo.width}
-            height={logo.height}
+            src={logo.src || '/virgin-media-o2-logo.svg'}
+            width={logo.width || 200}
+            height={logo.height || 40}
             alt="Virgin Media O2 Logo"
             className="h-10 w-auto"
             priority

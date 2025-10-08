@@ -2,9 +2,11 @@ import type { ComponentProps, FC } from 'react';
 
 type TableProps = Omit<ComponentProps<'table'>, 'className'>;
 
-export const Table: FC<TableProps> = (props) => (
+export const Table: FC<TableProps> = ({ children, ...props }) => (
   <table
     className="w-full border-collapse border border-gray-300 mb-4 last:mb-0 text-pretty"
     {...props}
-  />
+  >
+    <tbody>{children}</tbody>
+  </table>
 );

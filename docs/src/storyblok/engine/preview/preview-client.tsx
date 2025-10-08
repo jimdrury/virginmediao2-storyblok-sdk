@@ -14,20 +14,20 @@ export const PreviewClient: FC<PreviewClientProps> = ({
   ...props
 }) => {
   const [renderedStory, setRenderedStory] = useState<ReactNode>(children);
-  const bridgeStory = useBridge();
+  const { story: bridgeStory } = useBridge();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Should not rerender on props change
   useEffect(() => {
     (async () => {
-      if (!bridgeStory) {
-        return;
-      }
+      if (bridgeStory) {
+        const renderedStory = await previewAction({
+          story: bridgeStory,
+          version: 'draft',
+          ...props,
+        });
 
-      const renderedStory = await previewAction({
-        story: bridgeStory,
-        ...props,
-      });
-      setRenderedStory(renderedStory);
+        setRenderedStory(renderedStory);
+      }
     })();
   }, [bridgeStory]);
 

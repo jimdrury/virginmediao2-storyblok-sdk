@@ -10,3 +10,8 @@
 .mockup-code pre:before {
   display: none;
 }
+
+.alert.alert-dash,
+.alert.alert-outline {
+  background-color: var(--color-base-100);
+}

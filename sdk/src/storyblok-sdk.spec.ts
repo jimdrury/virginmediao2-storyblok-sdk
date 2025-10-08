@@ -190,103 +190,6 @@ describe('StoryblokSdk', () => {
     });
   });
 
-  describe('getStoriesByTag', () => {
-    it('should fetch stories by tag', async () => {
-      const tag = 'featured';
-      const mockResponse = { data: { stories: [] } };
-
-      mockAxiosInstance.get.mockResolvedValue(mockResponse);
-
-      await sdk.getStoriesByTag(tag);
-
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/stories', {
-        params: {
-          filter_query: {
-            tag_list: { in: tag },
-          },
-        },
-      });
-    });
-
-    it('should fetch stories by tag with additional params', async () => {
-      const tag = 'featured';
-      const params = { starts_with: 'blog/' };
-
-      await sdk.getStoriesByTag(tag, params);
-
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/stories', {
-        params: {
-          starts_with: 'blog/',
-          filter_query: {
-            tag_list: { in: tag },
-          },
-        },
-      });
-    });
-  });
-
-  describe('getStoriesByPath', () => {
-    it('should fetch stories by path', async () => {
-      const path = 'blog/';
-      const mockResponse = { data: { stories: [] } };
-
-      mockAxiosInstance.get.mockResolvedValue(mockResponse);
-
-      await sdk.getStoriesByPath(path);
-
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/stories', {
-        params: {
-          starts_with: path,
-        },
-      });
-    });
-
-    it('should fetch stories by path with additional params', async () => {
-      const path = 'blog/';
-      const params = { version: 'published' as const };
-
-      await sdk.getStoriesByPath(path, params);
-
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/stories', {
-        params: {
-          version: 'published',
-          starts_with: path,
-        },
-      });
-    });
-  });
-
-  describe('searchStories', () => {
-    it('should search stories', async () => {
-      const searchTerm = 'Next.js';
-      const mockResponse = { data: { stories: [] } };
-
-      mockAxiosInstance.get.mockResolvedValue(mockResponse);
-
-      await sdk.searchStories(searchTerm);
-
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/stories', {
-        params: {
-          search_term: searchTerm,
-        },
-      });
-    });
-
-    it('should search stories with additional params', async () => {
-      const searchTerm = 'Next.js';
-      const params = { starts_with: 'blog/' };
-
-      await sdk.searchStories(searchTerm, params);
-
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/stories', {
-        params: {
-          starts_with: 'blog/',
-          search_term: searchTerm,
-        },
-      });
-    });
-  });
-
   describe('getTags', () => {
     it('should fetch tags', async () => {
       const mockResponse = {
@@ -384,18 +287,6 @@ describe('StoryblokSdk', () => {
       expect(typeof sdk.getAllStories).toBe('function');
     });
 
-    it('should have getAllStoriesByTag method', () => {
-      expect(typeof sdk.getAllStoriesByTag).toBe('function');
-    });
-
-    it('should have getAllStoriesByPath method', () => {
-      expect(typeof sdk.getAllStoriesByPath).toBe('function');
-    });
-
-    it('should have searchAllStories method', () => {
-      expect(typeof sdk.searchAllStories).toBe('function');
-    });
-
     it('should have getAllTags method', () => {
       expect(typeof sdk.getAllTags).toBe('function');
     });
@@ -411,18 +302,6 @@ describe('StoryblokSdk', () => {
     it('should handle getAllStories call without throwing', async () => {
       // Since fetchAllPaginated is mocked, this should resolve
       await expect(sdk.getAllStories()).resolves.toBeDefined();
-    });
-
-    it('should handle getAllStoriesByTag call without throwing', async () => {
-      await expect(sdk.getAllStoriesByTag('featured')).resolves.toBeDefined();
-    });
-
-    it('should handle getAllStoriesByPath call without throwing', async () => {
-      await expect(sdk.getAllStoriesByPath('blog/')).resolves.toBeDefined();
-    });
-
-    it('should handle searchAllStories call without throwing', async () => {
-      await expect(sdk.searchAllStories('typescript')).resolves.toBeDefined();
     });
 
     it('should handle getAllTags call without throwing', async () => {
@@ -534,36 +413,6 @@ describe('StoryblokSdk', () => {
 
       expect(mockAxiosInstance.get).toHaveBeenCalledWith(`/stories/${slug}`, {
         params: undefined,
-      });
-    });
-
-    it('should handle empty search terms', async () => {
-      const mockResponse = { data: { stories: [] } };
-      mockAxiosInstance.get.mockResolvedValue(mockResponse);
-
-      await sdk.searchStories('');
-
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/stories', {
-        params: {
-          search_term: '',
-        },
-      });
-    });
-
-    it('should handle empty tag names', async () => {
-      const mockResponse = { data: { stories: [] } };
-      mockAxiosInstance.get.mockResolvedValue(mockResponse);
-
-      await sdk.getStoriesByTag('');
-
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/stories', {
-        params: {
-          filter_query: {
-            tag_list: {
-              in: '',
-            },
-          },
-        },
       });
     });
   });

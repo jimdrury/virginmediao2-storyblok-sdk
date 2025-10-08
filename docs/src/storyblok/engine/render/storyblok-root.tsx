@@ -8,7 +8,13 @@ import type {
 } from '../engine.interface';
 
 export const initStoryblokRoot = ({ components }: StoryblokEngineProps) => {
-  const StoryblokRoot: FC<StoryblokRootProps> = ({ story, ...rootProps }) => {
+  const StoryblokRoot: FC<StoryblokRootProps> = ({
+    story,
+    version = 'published',
+    cv,
+    from_release,
+    ...rootProps
+  }) => {
     const StoryblokComponent: FC<StoryblokComponentProps> = ({
       blok,
       ...localProps
@@ -25,6 +31,9 @@ export const initStoryblokRoot = ({ components }: StoryblokEngineProps) => {
           StoryblokComponent={StoryblokComponent}
           context={{
             story,
+            cv,
+            from_release,
+            version,
             ...rootProps,
             ...localProps,
           }}
